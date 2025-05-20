@@ -11,3 +11,8 @@ The resources in this repository are available under the Creative Commons Attrib
 A noter qu'une grande partie de mes textures sont de simples recolorations ou des remakes d'autres textures. Donc si vous avez un souci concernant l'utilisation d'une de vos textures, n'hésitez pas à venir m'en parler (mon discord : @delta_primexii).
 
 Les ressources de ce repository sont disponibles sous la Creative Commons Attribution 4.0 International License, conformément à la Licence incluse.
+
+----------------------------------------------------------------------------------------------------
+
+And thanks to oparisblue for his amazing Minecraft Texture Viewer , which let you generate a gallery view of my textures !
+https://oparisblue.github.io/minecraft-textures-viewer/#github/DeltaPrimeXII/Delta_s_things/main/assets

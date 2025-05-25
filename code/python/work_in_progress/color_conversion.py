@@ -178,6 +178,13 @@ def oklab_to_rgb(oklab):
     g = round((matrix_lms_to_rgb[1][0]*l + matrix_lms_to_rgb[1][1]*m + matrix_lms_to_rgb[1][2]*s)*255)
     b = round((matrix_lms_to_rgb[2][0]*l + matrix_lms_to_rgb[2][1]*m + matrix_lms_to_rgb[2][2]*s)*255)
 
+    if r > 255:
+        r = 255
+    if g > 255:
+        g = 255
+    if b > 255:
+        b = 255
+
     return (r, g, b, oklab[3])
 #====================================================================================================
 def oklab_to_oklch(oklab):
@@ -209,9 +216,6 @@ def rgb_to_oklch(rgb):
 def oklch_to_rgb(oklch):
     oklab = oklch_to_oklab(oklch)
     return oklab_to_rgb(oklab)
-#====================================================================================================
-def abc_print(a):
-    print(a)
 #////////////////////////////////////////////////////////////////////////////////////////////////////
 
 # print("HEX ",hex_to_rgb("FF4E118B"))

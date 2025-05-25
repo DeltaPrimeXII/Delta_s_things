@@ -1,4 +1,4 @@
-#delta_python_editing
+#editing_filters
 
 from PIL import Image
 from random import randint
@@ -7,8 +7,8 @@ import re
 import color_conversion as col
 import mean_shift_clusturing as msc
 
-palette_name = "palettes/berry_nebula.txt"
-img_name = "image_1.png"
+palette_name = "palettes/brued.txt"
+img_name = "image_2.png"
 im = Image.open(img_name) # Can be many different formats.
 
 #--------------------------#
@@ -179,7 +179,7 @@ def grayscale(pix):# RGB values
             pix[y][x] = (fbw, fbw, fbw, A)
     #return True
 #--------------------------------------------------
-def hue_shifting(pix, shift=0):
+def hue_shifting(pix, shift=45):
 
     space_conversion(pix, col.rgb_to_hsv)
 
@@ -196,7 +196,7 @@ def hue_shifting(pix, shift=0):
     space_conversion(pix, col.hsv_to_rgb)
     #return True
 #--------------------------------------------------
-def ok_hue_shifting(pix, shift=0):
+def ok_hue_shifting(pix, shift=45):
 
     space_conversion(pix, col.rgb_to_oklch)
 
@@ -251,10 +251,9 @@ def blur(pix, strengh=1):
             mean = []
     #return True
 #--------------------------------------------------
-def difference(pix):
+def edge_detection(pix):
 
     blurry_pix = copy_values(pix)
-    # blurry_pix = deepcopy(pix)
     blur(blurry_pix)
 
     for y in range(len(pix)):
@@ -305,13 +304,13 @@ def randomizer(pix, chance=50):# in %
                     pix[y+a][x+b] = pix_copy[y][x]
     #return True
 #--------------------------------------------------
-def negate_blend(pix, mask):
+def negate_blend(pix):
 
     for y in range(len(pix)):
         for x in range(len(pix[y])):
-            R = round(pix[y][x][0] + (255-2*pix[y][x][0])*(mask[y][x][0]/255))
-            G = round(pix[y][x][1] + (255-2*pix[y][x][1])*(mask[y][x][1]/255))
-            B = round(pix[y][x][2] + (255-2*pix[y][x][2])*(mask[y][x][2]/255))
+            R = round(255 - abs(255 - (2 * pix[y][x][0])))
+            G = round(255 - abs(255 - (2 * pix[y][x][1])))
+            B = round(255 - abs(255 - (2 * pix[y][x][2])))
             A = pix[y][x][3]
 
             pix[y][x] = (R,G,B,A)
@@ -360,34 +359,69 @@ def apply_palette(pix, p_name):
     for y in range(len(pix)):
         for x in range(len(pix[y])):
             for e in range(len(color_total)):
+                # print("total ",e)
                 if pix[y][x] == color_total[e]:
                     pix[y][x] = used_colors[e]
     #return True
 #--------------------------------------------------
-def gradient(pix, starting, ending, number):
+direction_list = ["up", "right", "down", "left"]
+direction_map = {"up":(0,-1), "right":(1,0), "down":(0,1), "left":(-1,0)}
 
-    starting = col.rgb_to_oklab(starting)
-    ending = col.rgb_to_oklab(ending)
+def gradient(pix, direction, first_color, second_color):
 
-    delta = (ending[0] - starting[0], ending[1] - starting[1], ending[2] - starting[2])
-    step = (delta[0]/(number+1), delta[1]/(number+1), delta[2]/(number+1))
-    g_color = starting
+    # first_color = col.rgb_to_oklab(first_color)
+    # second_color = col.rgb_to_oklab(second_color)
+
+    delta = (second_color[0] - first_color[0],
+             second_color[1] - first_color[1],
+             second_color[2] - first_color[2],
+             second_color[3] - first_color[3])
+    
+    if direction == "up" or direction == "down":
+        lenght = len(pix)
+    else:
+        lenght = len(pix[0])+1
+
+    step = (delta[0]/(lenght),
+            delta[1]/(lenght),
+            delta[2]/(lenght),
+            delta[3]/(lenght))
+    
+    g_color = first_color
     g_list = [g_color]
 
-    for i in range(number+1):
-        g_color = (g_color[0] + step[0], g_color[1] + step[1], g_color[2] + step[2], g_color[3])
+    for i in range(lenght-1):
+        g_color = (g_color[0] + step[0],
+                   g_color[1] + step[1],
+                   g_color[2] + step[2],
+                   g_color[3] + step[3])
         g_list.append(g_color)
 
-    for i in range(len(g_list)):
-        g_list[i] = col.oklab_to_rgb(g_list[i])
+    if direction == "up" or direction == "left":
+        i = 0
+    else:
+        i = -1
 
-    for i in range(len(g_list)):
-        pix[0][i] = g_list[i]
+    for y in range(len(pix)):
+        i += direction_map[direction][1]
+        for x in range(len(pix[y])):
+            i += direction_map[direction][0]
+            direction_map[direction]
+            pix[y][x] = (round(pix[y][x][0] - ((pix[y][x][0]-g_list[i][0])*(g_list[i][3]/255))),
+                         round(pix[y][x][1] - ((pix[y][x][1]-g_list[i][1])*(g_list[i][3]/255))),
+                         round(pix[y][x][2] - ((pix[y][x][2]-g_list[i][2])*(g_list[i][3]/255))),
+                         round(pix[y][x][3] + (g_list[i][3]*(g_list[i][3]/255))))
+        if direction == "right" or direction == "left":
+            i = 0
+
+    # for i in range(len(g_list)):
+    #     pix[0][i] = g_list[i]
+
     #return True
 #--------------------------------------------------
-def clustering_posterization(pix, cell= 8, r= 16):
+def clustering_posterization(pix, cell= 8, radius= 16):
 
-    color_list = msc.mean_shift_clusturing(pix, cell, r)
+    color_list = msc.mean_shift_clusturing(pix, cell, radius)
     for y in range(len(pix)):
         for x in range(len(pix[y])):
             nearest = (color_list[0], msc.distance(pix[y][x], color_list[0]))
@@ -396,49 +430,59 @@ def clustering_posterization(pix, cell= 8, r= 16):
                     nearest = (i, msc.distance(pix[y][x], i))
             pix[y][x] = nearest[0]
     #return True
+#--------------------------------------------------
+def bloom(pix, threshold_value=127, blur_strengh=1, bloom_strengh=64):
+    pix_copy = copy_values(pix)
+    grayscale(pix_copy)
+    threshold(pix_copy, threshold_value)
+    blur(pix_copy, blur_strengh)
+    for y in range(len(pix)):
+        for x in range(len(pix[y])):
+            R = pix[y][x][0] + round(pix_copy[y][x][0] * (bloom_strengh/255))
+            G = pix[y][x][1] + round(pix_copy[y][x][1] * (bloom_strengh/255))
+            B = pix[y][x][2] + round(pix_copy[y][x][2] * (bloom_strengh/255))
+            A = pix[y][x][3]
+
+            if R > 255:
+                R = 255
+            if G > 255:
+                G = 255
+            if B > 255:
+                B = 255
+
+            pix[y][x] = (R,G,B,A)
+    #return True
 #==================================================
 if img[0, 0] == 0:   #
     exit()           #
 #--------------------#
-# pixel_list = get_values(img)
+pixel_list = get_values(img, im.size)
 
 # print("pixel_list[0][0] >>>", pixel_list[0][0])
 
-#invert_colors(pixel_list)
-#blur(pixel_list)
-#threshold(pixel_list, 192)
-#randomizer(pixel_list, 1)
-#difference(pixel_list)
-#simple_posterization(pixel_list, 10)
-#negate_blend(pixel_list, pixel_list)
-
-#apply_palette(pixel_list, palette_name)
-#hue_shifting(pixel_list, 180)
-#OKhue_shifting(pixel_list, 30)
 #print(ciexyz_to_oklab(srgb_to_ciexyz(rgb_to_srgb((255,128,32,255)))))
 #print(ciexyz_to_oklab((0,1,0,255)))
 #print(oklab_to_oklch(rgb_to_oklab((255,128,32,255))))
 
-# gradient(pixel_list, (0,160,0,255), (0,160,0,255), 6)
+gradient(pixel_list, "right", (255,0,0,255), (0,0,255,64))
 
 # print(msc.mean_shift(msc.celled_list(pixel_list), (255,127,0,255)))
 # print(msc.mean_shift_clusturing(pixel_list, 8, 16))
 # print(msc.celled_list(pixel_list))
 # clustering_posterization(pixel_list)
 
-
 # col.abc_print("functions work correctly")
 # grayscale(pixel_list)
 
-# update_image(img, pixel_list)
+update_image(img, pixel_list)
 
 #==================================================
 
 # Save the modified pixels as .png
-# im.save(f"{img_name[0:len(img_name)-4]}_new{img_name[len(img_name)-4:len(img_name)]}")
+im.save(f"{img_name[0:len(img_name)-4]}_new{img_name[len(img_name)-4:len(img_name)]}")
 
 #==================================================
 
-
+print("editing_filters.py LOADED")
 
 

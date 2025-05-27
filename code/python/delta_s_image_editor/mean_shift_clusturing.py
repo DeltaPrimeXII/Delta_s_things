@@ -139,3 +139,5 @@ def mean_shift_clusturing(liste, cell=8, r=16):
 
 # print(re_range((16,50,255,255),8))
 # print(re_range((31,50,255,255),8))
+
+print("mean_shift_clusturing.py LOADED")

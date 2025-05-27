@@ -1,4 +1,4 @@
-#editing_filters
+# function file to import
 
 from PIL import Image
 from random import randint
@@ -18,8 +18,6 @@ if im.mode != "RGBA":      #
 
 img = im.load()
 # w, h = im.size
-
-print(f"|---------- W = {999} and H = {999} ----------|")
 
 #print(img[0, 0])  # Get the RGBA Value of the a pixel of an image
 #pix[1, 0] = (0, 0, 0)  # Set the RGBA Value of the image (tuple)
@@ -456,7 +454,7 @@ def bloom(pix, threshold_value=127, blur_strengh=1, bloom_strengh=64):
 if img[0, 0] == 0:   #
     exit()           #
 #--------------------#
-pixel_list = get_values(img, im.size)
+# pixel_list = get_values(img, im.size)
 
 # print("pixel_list[0][0] >>>", pixel_list[0][0])
 
@@ -464,7 +462,7 @@ pixel_list = get_values(img, im.size)
 #print(ciexyz_to_oklab((0,1,0,255)))
 #print(oklab_to_oklch(rgb_to_oklab((255,128,32,255))))
 
-gradient(pixel_list, "right", (255,0,0,255), (0,0,255,64))
+# gradient(pixel_list, "right", (255,0,0,255), (0,0,255,64))
 
 # print(msc.mean_shift(msc.celled_list(pixel_list), (255,127,0,255)))
 # print(msc.mean_shift_clusturing(pixel_list, 8, 16))
@@ -474,12 +472,12 @@ gradient(pixel_list, "right", (255,0,0,255), (0,0,255,64))
 # col.abc_print("functions work correctly")
 # grayscale(pixel_list)
 
-update_image(img, pixel_list)
+# update_image(img, pixel_list)
 
 #==================================================
 
 # Save the modified pixels as .png
-im.save(f"{img_name[0:len(img_name)-4]}_new{img_name[len(img_name)-4:len(img_name)]}")
+# im.save(f"{img_name[0:len(img_name)-4]}_new{img_name[len(img_name)-4:len(img_name)]}")
 
 #==================================================
 

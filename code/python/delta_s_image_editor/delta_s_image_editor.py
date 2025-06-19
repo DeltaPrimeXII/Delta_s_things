@@ -111,7 +111,7 @@ def waiting_file(format):
     #ask for a save location
     if format == "save":
         tkinter.Tk().withdraw() #prevents an empty tkinter window from appearing
-        p = filedialog.asksaveasfilename(initialdir= location)#defaultextension="png"/filtypes= (?,?)
+        p = filedialog.asksaveasfilename(initialdir= location, defaultextension="png")#defaultextension="png"/filtypes= (?,?)
         if p == "":
             return False
         else:

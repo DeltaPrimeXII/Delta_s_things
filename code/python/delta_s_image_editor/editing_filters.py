@@ -9,14 +9,14 @@ import mean_shift_clusturing as msc
 
 palette_name = "palettes/brued.txt"
 img_name = "image_2.png"
-im = Image.open(img_name) # Can be many different formats.
+#im = Image.open(img_name) # Can be many different formats.
 
 #--------------------------#
-if im.mode != "RGBA":      #
-    im = im.convert("RGBA")#
+#if im.mode != "RGBA":      #
+#    im = im.convert("RGBA")#
 #--------------------------#
 
-img = im.load()
+#img = im.load()
 # w, h = im.size
 
 #print(img[0, 0])  # Get the RGBA Value of the a pixel of an image
@@ -451,9 +451,7 @@ def bloom(pix, threshold_value=127, blur_strengh=1, bloom_strengh=64):
             pix[y][x] = (R,G,B,A)
     #return True
 #==================================================
-if img[0, 0] == 0:   #
-    exit()           #
-#--------------------#
+
 # pixel_list = get_values(img, im.size)
 
 # print("pixel_list[0][0] >>>", pixel_list[0][0])

@@ -1,7 +1,7 @@
 # function file to import
 
 from math import sqrt, floor
-from color_conversion import round_rgb
+from to_import.color_conversion import round_rgb
 
 #----------------------------------------------------------------------------------------------------
 def distance(a, b): #(x, y, z)

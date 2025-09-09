@@ -4,8 +4,8 @@ from PIL import Image
 from random import randint
 #from copy import deepcopy
 import re
-import color_conversion as col
-import mean_shift_clusturing as msc
+import to_import.color_conversion as col
+import to_import.mean_shift_clusturing as msc
 
 palette_name = "palettes/brued.txt"
 img_name = "image_2.png"

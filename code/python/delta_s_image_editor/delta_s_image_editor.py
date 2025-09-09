@@ -1,4 +1,4 @@
-#delta_s_image_editer
+#delta_s_image_editor
 
 import pygame, sys
 from pygame.locals import *
@@ -7,7 +7,7 @@ from tkinter import filedialog
 from os import getcwd
 from PIL import Image
 from inspect import getmembers, isfunction, signature, _empty
-import editing_filters as edit
+import to_import.editing_filters as edit
 import time
 
 #absolute path of this python file

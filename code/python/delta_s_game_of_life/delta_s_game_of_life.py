@@ -1,3 +1,5 @@
+#Delta's game of life
+
 import pygame, sys
 from pygame.locals import *
 import time

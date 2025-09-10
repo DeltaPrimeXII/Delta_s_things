@@ -24,7 +24,7 @@ top = 10
 bottom = HEIGHT-10
 
 background = (14,15,19)
-# background = (30,33,41)
+l_gray = (30,33,41)
 white = (255,255,255)
 b_gray = (93,95,103)
 t_gray = (190,193,198)
@@ -39,11 +39,12 @@ def security():
         pygame.display.quit()
         sys.exit()
 #--------------------------------------------------
-def draw_grid():
-    for x in range(0, WIDTH, 20):
-        pygame.draw.line(fenetre, (50, 50, 50), (x, 0), (x, HEIGHT))
-    for y in range(0, HEIGHT, 20):
-        pygame.draw.line(fenetre, (50, 50, 50), (0, y), (WIDTH, y))
+def draw_grid(px, offset):
+    if not px <= 5:
+        for x in range(0, WIDTH, px):
+            pygame.draw.line(fenetre, l_gray, (x+(offset[0]%px), 0), (x+(offset[0]%px), HEIGHT))
+        for y in range(0, HEIGHT, px):
+            pygame.draw.line(fenetre, l_gray, (0, y+(offset[1]%px)), (WIDTH, y+(offset[1]%px)))
 #--------------------------------------------------
 def calcul(grid):
     calcul_grid = {}
@@ -101,7 +102,7 @@ def update():
     fenetre.fill(background)
     #Elements
     show_grid(cell_layer, px, offset)
-    draw_grid()
+    draw_grid(px, offset)
     #UI
     cells = len(cell_layer)
     text_gen = font.render(f"Gen {gen}", True, (t_gray))

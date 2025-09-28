@@ -53,7 +53,7 @@ class Board:
                 else:
                     pygame.draw.rect(fenetre, (255, 255, 255), (x*64, y*64, 64, 64))
                 if self.board[y][x].piece:
-                    fenetre.blit(font.render(self.board[y][x].piece.race, True, (127,127,127)), dest=(x*64, y*64))
+                    fenetre.blit(font.render(self.board[y][x].piece.name, True, (127,127,127)), dest=(x*64, y*64))
                 color = not color
             color = not color
 
@@ -66,16 +66,41 @@ class Case:
     
 #==================================================
 class Piece:
-    def __init__(self, x:int, y:int, color:bool, race:str="p"):
+    def __init__(self, x:int, y:int, color:bool, name:str="p"):
         self.x = x
         self.y = y
         self.color = color # False = black, True = white
-        self.race = race
+        self.name = name
+#==================================================
+class Pawn(Piece):
+    def __init__(self, x:int=0, y:int=0, color:bool=False, name:str="p"):
+        Piece.__init__(self, x, y, color, name)
+        self.move = [(0, 1), (0, 2)] # 1 or 2 cases forward
 
+class Rook(Piece):
+    def __init__(self, x:int=0, y:int=0, color:bool=False, name:str="r"):
+        Piece.__init__(self, x, y, color, name)
+        self.move = [(0, 1), (1, 0), (0, -1), (-1, 0)] # each direction horizontaly and verticaly
 
+class Bishop(Piece):
+    def __init__(self, x:int=0, y:int=0, color:bool=False, name:str="b"):
+        Piece.__init__(self, x, y, color, name)
+        self.move = [(1, 1), (1, -1), (-1, -1), (-1, 1)] # each direction diagonaly
 
+class Knight(Piece):
+    def __init__(self, x:int=0, y:int=0, color:bool=False, name:str="n"):
+        Piece.__init__(self, x, y, color, name)
+        self.move = [(-1, 2), (1, 2), (-1, -2), (1, -2), (2, 1), (-2, 1), (2, -1), (-2, -1)] # L pattern
 
+class Queen(Piece):
+    def __init__(self, x:int=0, y:int=0, color:bool=False, name:str="q"):
+        Piece.__init__(self, x, y, color, name)
+        self.move = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, -1), (-1, 1)] # each direction (Rook + Bishop)
 
+class King(Piece):
+    def __init__(self, x:int=0, y:int=0, color:bool=False, name:str="k"):
+        Piece.__init__(self, x, y, color, name)
+        self.move = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, -1), (-1, 1)] # Queen but bad
 #--------------------------------------------------
 def security():
     if event.type == pygame.QUIT:

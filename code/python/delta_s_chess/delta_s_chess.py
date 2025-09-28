@@ -37,7 +37,7 @@ class Board:
         for y in range(8):
             for x in range(8):
                 if Board.default_board[y][x] != " ":
-                    line.append(Case(x, y, Piece(x, y, y > 3, Board.default_board[y][x])))
+                    line.append(Case(x, y, Piece(self, x, y, y > 3, Board.default_board[y][x])))
                 else:
                     line.append(Case(x, y))
             board.append(line)
@@ -66,7 +66,8 @@ class Case:
     
 #==================================================
 class Piece:
-    def __init__(self, x:int, y:int, color:bool, name:str="p"):
+    def __init__(self, board:"Board", x:int, y:int, color:bool, name:str="p"):
+        self.board = board
         self.x = x
         self.y = y
         self.color = color # False = black, True = white
@@ -81,6 +82,20 @@ class Rook(Piece):
     def __init__(self, x:int=0, y:int=0, color:bool=False, name:str="r"):
         Piece.__init__(self, x, y, color, name)
         self.move = [(0, 1), (1, 0), (0, -1), (-1, 0)] # each direction horizontaly and verticaly
+    def valid_move(self, x:int, y:int):
+        valid = {}
+        for i in self.move:
+            e = 1
+            while 0 <= self.x + i[0]*e <= 7 and 0 <= self.y + i[1]*e <= 7:
+                if self.board.board[self.y + i[1]*e][self.x + i[0]*e].piece == None:
+                    valid[(self.x + i[0]*e, self.y + i[1]*e)] = True
+                elif self.board.board[self.y + i[1]*e][self.x + i[0]*e].piece.color != self.color:
+                    valid[(self.x + i[0]*e, self.y + i[1]*e)] = True
+                    break
+                else:
+                    break
+                e += 1
+        return valid
 
 class Bishop(Piece):
     def __init__(self, x:int=0, y:int=0, color:bool=False, name:str="b"):

@@ -62,8 +62,8 @@ class Board:
     def update_pieces(self):
         for y in range(8):
             for x in range(8):
-                if Board.default_board[y][x]:
-                    Board.board[y][x].piece.update_moves()
+                if self.board[y][x].piece:#I should not copy paste too much :P
+                    self.board[y][x].piece.update_moves()
 
 
 #==================================================
@@ -84,6 +84,7 @@ class Piece:
         self.color = color # False = black, True = white
         self.name = name
         self.moves = []
+        self.abc = "ABC"
     
     def update_moves(self):
         self.moves = self.valid_move()
@@ -94,6 +95,7 @@ class Pawn(Piece):
     def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="p", has_moved:bool=False):
         Piece.__init__(self, board, x, y, color, name)
         self.move_options = [(0, 1), (0, 2)] # 1 or 2 cases forward
+        self.has_moved = has_moved
     def valid_move(self):
         valid = []
         # for i in self.move_options:
@@ -112,11 +114,13 @@ class Pawn(Piece):
             if 0 <= self.x + i <= 7 and 0 <= self.y + 1 <= 7: # eat move
                 if self.board.board[self.y + 1][self.x + i].piece and self.board.board[self.y + 1][self.x + i].piece.color != self.color:
                     valid.append((self.x + i, self.y + 1))
+        return valid #RETURN VALID YOU PLONKER !!!!!
 
 class Rook(Piece):
     def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="r", has_moved:bool=False):
         Piece.__init__(self, board, x, y, color, name)
         self.move_options = [(0, 1), (1, 0), (0, -1), (-1, 0)] # each direction horizontaly and verticaly
+        self.has_moved = has_moved
     def valid_move(self):
         valid = []
         for i in self.move_options:
@@ -188,6 +192,7 @@ class King(Piece):
     def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="k", has_moved:bool=False):
         Piece.__init__(self, board, x, y, color, name)
         self.move_options = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, -1), (-1, 1)] # Queen but bad
+        self.has_moved = has_moved
     def valid_move(self):
         valid = []
         for i in self.move_options:
@@ -237,15 +242,18 @@ while True :
             fenetre = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
     #================================#
 
-    if event.type == MOUSEBUTTONDOWN:
-        selected_piece = board.board[case_pos[1]][case_pos[0]].piece
-
-    if selected_piece:
-        for i in selected_piece.moves:
-            pygame.draw.rect(fenetre, (255, 0, 0), (i.x*64, i.y*64, 64, 64))
-
+        if event.type == MOUSEBUTTONDOWN:
+            if 0 <= case_pos[0] <= 7 and 0 <= case_pos[1] <= 7:
+                selected_piece = board.board[case_pos[1]][case_pos[0]].piece
+                board.update_pieces()
 
 
     fenetre.fill(background)
     board.display()
+
+    if selected_piece:
+        for i in selected_piece.moves:
+            print(i)
+            pygame.draw.rect(fenetre, (255, 0, 0), (i[0]*64, i[1]*64, 64, 64))
+
     pygame.display.flip()

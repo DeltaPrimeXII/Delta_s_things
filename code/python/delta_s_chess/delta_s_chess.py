@@ -19,6 +19,7 @@ background = (14,15,19)
 fenetre.fill(background)
 pygame.display.flip()
 
+
 #==================================================
 class Board:
     default_board = [
@@ -37,7 +38,7 @@ class Board:
         for y in range(8):
             for x in range(8):
                 if Board.default_board[y][x] != " ":
-                    line.append(Case(x, y, Piece(self, x, y, y > 3, Board.default_board[y][x])))
+                    line.append(Case(x, y, piece_name[Board.default_board[y][x]](self, x, y, y > 3, Board.default_board[y][x]))) #This line is way too long
                 else:
                     line.append(Case(x, y))
             board.append(line)
@@ -72,17 +73,36 @@ class Piece:
         self.y = y
         self.color = color # False = black, True = white
         self.name = name
+        
 #==================================================
 class Pawn(Piece):
-    def __init__(self, x:int=0, y:int=0, color:bool=False, name:str="p"):
-        Piece.__init__(self, x, y, color, name)
+    def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="p", has_moved:bool=False):
+        Piece.__init__(self, board, x, y, color, name)
         self.move = [(0, 1), (0, 2)] # 1 or 2 cases forward
+    def valid_move(self):
+        valid = {}
+        # for i in self.move:
+        #     while 0 <= self.x + i[0] <= 7 and 0 <= self.y + i[1] <= 7:
+        #         if self.board.board[self.y + i[1]][self.x + i[0]].piece == None:
+        #             valid[(self.x + i[0], self.y + i[1])] = True
+        #         else:
+        #             break
+        if 0 <= self.x <= 7 and 0 <= self.y + 1 <= 7: # normal move
+            if self.board.board[self.y + 1][self.x].piece == None:
+                valid[(self.x, self.y + 1)] = True
+        if 0 <= self.x <= 7 and 0 <= self.y + 2 <= 7 and not self.has_moved: # first move
+            if self.board.board[self.y + 2][self.x].piece == None:
+                valid[(self.x, self.y + 2)] = True
+        for i in range(-1, 2, 2):
+            if 0 <= self.x + i <= 7 and 0 <= self.y + 1 <= 7: # eat move
+                if self.board.board[self.y + 1][self.x + i].piece and self.board.board[self.y + 1][self.x + i].piece.color != self.color:
+                    valid[(self.x + i, self.y + 1)] = True
 
 class Rook(Piece):
-    def __init__(self, x:int=0, y:int=0, color:bool=False, name:str="r"):
-        Piece.__init__(self, x, y, color, name)
+    def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="r", has_moved:bool=False):
+        Piece.__init__(self, board, x, y, color, name)
         self.move = [(0, 1), (1, 0), (0, -1), (-1, 0)] # each direction horizontaly and verticaly
-    def valid_move(self, x:int, y:int):
+    def valid_move(self):
         valid = {}
         for i in self.move:
             e = 1
@@ -98,24 +118,34 @@ class Rook(Piece):
         return valid
 
 class Bishop(Piece):
-    def __init__(self, x:int=0, y:int=0, color:bool=False, name:str="b"):
-        Piece.__init__(self, x, y, color, name)
+    def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="b"):
+        Piece.__init__(self, board, x, y, color, name)
         self.move = [(1, 1), (1, -1), (-1, -1), (-1, 1)] # each direction diagonaly
 
 class Knight(Piece):
-    def __init__(self, x:int=0, y:int=0, color:bool=False, name:str="n"):
-        Piece.__init__(self, x, y, color, name)
+    def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="n"):
+        Piece.__init__(self, board, x, y, color, name)
         self.move = [(-1, 2), (1, 2), (-1, -2), (1, -2), (2, 1), (-2, 1), (2, -1), (-2, -1)] # L pattern
 
 class Queen(Piece):
-    def __init__(self, x:int=0, y:int=0, color:bool=False, name:str="q"):
-        Piece.__init__(self, x, y, color, name)
+    def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="q"):
+        Piece.__init__(self, board, x, y, color, name)
         self.move = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, -1), (-1, 1)] # each direction (Rook + Bishop)
 
 class King(Piece):
-    def __init__(self, x:int=0, y:int=0, color:bool=False, name:str="k"):
-        Piece.__init__(self, x, y, color, name)
+    def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="k", has_moved:bool=False):
+        Piece.__init__(self, board, x, y, color, name)
         self.move = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, -1), (-1, 1)] # Queen but bad
+
+#==================================================
+piece_name = {
+    "p": Pawn,
+    "r": Rook,
+    "b": Bishop,
+    "n": Knight,
+    "q": Queen,
+    "k": King
+}
 #--------------------------------------------------
 def security():
     if event.type == pygame.QUIT:

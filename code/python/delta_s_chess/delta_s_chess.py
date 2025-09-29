@@ -222,8 +222,12 @@ def security():
 board = Board()
 board.display()
 
+selected_piece = None
+
 while True :
 
+    pos = pygame.mouse.get_pos()
+    case_pos = ((pos[0])//64, (pos[1])//64)
     #================================#
     for event in pygame.event.get(): #
         security()                   #
@@ -232,6 +236,16 @@ while True :
             WIDTH, HEIGHT = event.w, event.h
             fenetre = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
     #================================#
+
+    if event.type == MOUSEBUTTONDOWN:
+        selected_piece = board.board[case_pos[1]][case_pos[0]].piece
+
+    if selected_piece:
+        for i in selected_piece.moves:
+            pygame.draw.rect(fenetre, (255, 0, 0), (i.x*64, i.y*64, 64, 64))
+
+
+
     fenetre.fill(background)
     board.display()
     pygame.display.flip()

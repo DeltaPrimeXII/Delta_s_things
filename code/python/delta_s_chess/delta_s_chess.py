@@ -27,9 +27,9 @@ class Board:
         ["r","n","b","q","k","b","n","r"],
         ["p","p","p","p","p","p","p","p"],
         [" "," "," "," "," "," "," "," "],
-        [" "," "," "," "," "," "," "," "],
-        [" "," "," "," "," "," "," "," "],
-        [" "," "," "," "," "," "," "," "],
+        [" ","n"," ","q"," ","p"," "," "],
+        ["r"," "," "," "," "," ","b"," "],
+        [" "," "," "," ","k"," "," "," "],
         ["p","p","p","p","p","p","p","p"],
         ["r","n","b","q","k","b","n","r"]
     ]
@@ -198,9 +198,9 @@ class King(Piece):
         for i in self.move_options:
             if 0 <= self.x + i[0] <= 7 and 0 <= self.y + i[1] <= 7:
                 if self.board.board[self.y + i[1]][self.x + i[0]].piece == None:
-                    valid[(self.x + i[0], self.y + i[1])] = True
+                    valid.append((self.x + i[0], self.y + i[1]))
                 elif self.board.board[self.y + i[1]][self.x + i[0]].piece.color != self.color:
-                    valid[(self.x + i[0], self.y + i[1])] = True
+                    valid.append((self.x + i[0], self.y + i[1]))
         return valid
 
 #==================================================

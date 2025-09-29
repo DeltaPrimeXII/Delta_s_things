@@ -21,6 +21,7 @@ pygame.display.flip()
 
 
 #==================================================
+
 class Board:
     default_board = [
         ["r","n","b","q","k","b","n","r"],
@@ -57,8 +58,16 @@ class Board:
                     fenetre.blit(font.render(self.board[y][x].piece.name, True, (127,127,127)), dest=(x*64, y*64))
                 color = not color
             color = not color
+    
+    def update_pieces(self):
+        for y in range(8):
+            for x in range(8):
+                if Board.default_board[y][x]:
+                    Board.board[y][x].piece.update_moves()
+
 
 #==================================================
+
 class Case:
     def __init__(self, x:int, y:int, piece:"Piece"=None):
         self.x = x
@@ -66,6 +75,7 @@ class Case:
         self.piece = piece
     
 #==================================================
+
 class Piece:
     def __init__(self, board:"Board", x:int, y:int, color:bool, name:str="p"):
         self.board = board
@@ -73,15 +83,20 @@ class Piece:
         self.y = y
         self.color = color # False = black, True = white
         self.name = name
+        self.moves = []
+    
+    def update_moves(self):
+        self.moves = self.valid_move()
         
 #==================================================
+
 class Pawn(Piece):
     def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="p", has_moved:bool=False):
         Piece.__init__(self, board, x, y, color, name)
-        self.move = [(0, 1), (0, 2)] # 1 or 2 cases forward
+        self.move_options = [(0, 1), (0, 2)] # 1 or 2 cases forward
     def valid_move(self):
-        valid = {}
-        # for i in self.move:
+        valid = []
+        # for i in self.move_options:
         #     while 0 <= self.x + i[0] <= 7 and 0 <= self.y + i[1] <= 7:
         #         if self.board.board[self.y + i[1]][self.x + i[0]].piece == None:
         #             valid[(self.x + i[0], self.y + i[1])] = True
@@ -89,28 +104,28 @@ class Pawn(Piece):
         #             break
         if 0 <= self.x <= 7 and 0 <= self.y + 1 <= 7: # normal move
             if self.board.board[self.y + 1][self.x].piece == None:
-                valid[(self.x, self.y + 1)] = True
+                valid.append((self.x, self.y + 1))
         if 0 <= self.x <= 7 and 0 <= self.y + 2 <= 7 and not self.has_moved: # first move
             if self.board.board[self.y + 2][self.x].piece == None:
-                valid[(self.x, self.y + 2)] = True
+                valid.append((self.x, self.y + 2))
         for i in range(-1, 2, 2):
             if 0 <= self.x + i <= 7 and 0 <= self.y + 1 <= 7: # eat move
                 if self.board.board[self.y + 1][self.x + i].piece and self.board.board[self.y + 1][self.x + i].piece.color != self.color:
-                    valid[(self.x + i, self.y + 1)] = True
+                    valid.append((self.x + i, self.y + 1))
 
 class Rook(Piece):
     def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="r", has_moved:bool=False):
         Piece.__init__(self, board, x, y, color, name)
-        self.move = [(0, 1), (1, 0), (0, -1), (-1, 0)] # each direction horizontaly and verticaly
+        self.move_options = [(0, 1), (1, 0), (0, -1), (-1, 0)] # each direction horizontaly and verticaly
     def valid_move(self):
-        valid = {}
-        for i in self.move:
+        valid = []
+        for i in self.move_options:
             e = 1
             while 0 <= self.x + i[0]*e <= 7 and 0 <= self.y + i[1]*e <= 7:
                 if self.board.board[self.y + i[1]*e][self.x + i[0]*e].piece == None:
-                    valid[(self.x + i[0]*e, self.y + i[1]*e)] = True
+                    valid.append((self.x + i[0]*e, self.y + i[1]*e))
                 elif self.board.board[self.y + i[1]*e][self.x + i[0]*e].piece.color != self.color:
-                    valid[(self.x + i[0]*e, self.y + i[1]*e)] = True
+                    valid.append((self.x + i[0]*e, self.y + i[1]*e))
                     break
                 else:
                     break
@@ -120,16 +135,16 @@ class Rook(Piece):
 class Bishop(Piece):
     def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="b"):
         Piece.__init__(self, board, x, y, color, name)
-        self.move = [(1, 1), (1, -1), (-1, -1), (-1, 1)] # each direction diagonaly
+        self.move_options = [(1, 1), (1, -1), (-1, -1), (-1, 1)] # each direction diagonaly
     def valid_move(self):
-        valid = {}
-        for i in self.move:
+        valid = []
+        for i in self.move_options:
             e = 1
             while 0 <= self.x + i[0]*e <= 7 and 0 <= self.y + i[1]*e <= 7:
                 if self.board.board[self.y + i[1]*e][self.x + i[0]*e].piece == None:
-                    valid[(self.x + i[0]*e, self.y + i[1]*e)] = True
+                    valid.append((self.x + i[0]*e, self.y + i[1]*e))
                 elif self.board.board[self.y + i[1]*e][self.x + i[0]*e].piece.color != self.color:
-                    valid[(self.x + i[0]*e, self.y + i[1]*e)] = True
+                    valid.append((self.x + i[0]*e, self.y + i[1]*e))
                     break
                 else:
                     break
@@ -139,30 +154,30 @@ class Bishop(Piece):
 class Knight(Piece):
     def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="n"):
         Piece.__init__(self, board, x, y, color, name)
-        self.move = [(-1, 2), (1, 2), (-1, -2), (1, -2), (2, 1), (-2, 1), (2, -1), (-2, -1)] # L pattern
+        self.move_options = [(-1, 2), (1, 2), (-1, -2), (1, -2), (2, 1), (-2, 1), (2, -1), (-2, -1)] # L pattern
     def valid_move(self):
-        valid = {}
-        for i in self.move:
+        valid = []
+        for i in self.move_options:
             if 0 <= self.x + i[0] <= 7 and 0 <= self.y + i[1] <= 7:
                 if self.board.board[self.y + i[1]][self.x + i[0]].piece == None:
-                    valid[(self.x + i[0], self.y + i[1])] = True
+                    valid.append((self.x + i[0], self.y + i[1]))
                 elif self.board.board[self.y + i[1]][self.x + i[0]].piece.color != self.color:
-                    valid[(self.x + i[0], self.y + i[1])] = True
+                    valid.append((self.x + i[0], self.y + i[1]))
         return valid
 
 class Queen(Piece):
     def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="q"):
         Piece.__init__(self, board, x, y, color, name)
-        self.move = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, -1), (-1, 1)] # each direction (Rook + Bishop)
+        self.move_options = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, -1), (-1, 1)] # each direction (Rook + Bishop)
     def valid_move(self):
-        valid = {}
-        for i in self.move:
+        valid = []
+        for i in self.move_options:
             e = 1
             while 0 <= self.x + i[0]*e <= 7 and 0 <= self.y + i[1]*e <= 7:
                 if self.board.board[self.y + i[1]*e][self.x + i[0]*e].piece == None:
-                    valid[(self.x + i[0]*e, self.y + i[1]*e)] = True
+                    valid.append((self.x + i[0]*e, self.y + i[1]*e))
                 elif self.board.board[self.y + i[1]*e][self.x + i[0]*e].piece.color != self.color:
-                    valid[(self.x + i[0]*e, self.y + i[1]*e)] = True
+                    valid.append((self.x + i[0]*e, self.y + i[1]*e))
                     break
                 else:
                     break
@@ -172,10 +187,10 @@ class Queen(Piece):
 class King(Piece):
     def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="k", has_moved:bool=False):
         Piece.__init__(self, board, x, y, color, name)
-        self.move = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, -1), (-1, 1)] # Queen but bad
+        self.move_options = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, -1), (-1, 1)] # Queen but bad
     def valid_move(self):
-        valid = {}
-        for i in self.move:
+        valid = []
+        for i in self.move_options:
             if 0 <= self.x + i[0] <= 7 and 0 <= self.y + i[1] <= 7:
                 if self.board.board[self.y + i[1]][self.x + i[0]].piece == None:
                     valid[(self.x + i[0], self.y + i[1])] = True
@@ -213,7 +228,7 @@ while True :
     for event in pygame.event.get(): #
         security()                   #
     #================================# 
-        if event.type == VIDEORESIZE:
+        if event.type == VIDEORESIZE:#
             WIDTH, HEIGHT = event.w, event.h
             fenetre = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
     #================================#

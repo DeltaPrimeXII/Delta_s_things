@@ -121,6 +121,20 @@ class Bishop(Piece):
     def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="b"):
         Piece.__init__(self, board, x, y, color, name)
         self.move = [(1, 1), (1, -1), (-1, -1), (-1, 1)] # each direction diagonaly
+    def valid_move(self):
+        valid = {}
+        for i in self.move:
+            e = 1
+            while 0 <= self.x + i[0]*e <= 7 and 0 <= self.y + i[1]*e <= 7:
+                if self.board.board[self.y + i[1]*e][self.x + i[0]*e].piece == None:
+                    valid[(self.x + i[0]*e, self.y + i[1]*e)] = True
+                elif self.board.board[self.y + i[1]*e][self.x + i[0]*e].piece.color != self.color:
+                    valid[(self.x + i[0]*e, self.y + i[1]*e)] = True
+                    break
+                else:
+                    break
+                e += 1
+        return valid
 
 class Knight(Piece):
     def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="n"):
@@ -131,6 +145,20 @@ class Queen(Piece):
     def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="q"):
         Piece.__init__(self, board, x, y, color, name)
         self.move = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, -1), (-1, 1)] # each direction (Rook + Bishop)
+    def valid_move(self):
+        valid = {}
+        for i in self.move:
+            e = 1
+            while 0 <= self.x + i[0]*e <= 7 and 0 <= self.y + i[1]*e <= 7:
+                if self.board.board[self.y + i[1]*e][self.x + i[0]*e].piece == None:
+                    valid[(self.x + i[0]*e, self.y + i[1]*e)] = True
+                elif self.board.board[self.y + i[1]*e][self.x + i[0]*e].piece.color != self.color:
+                    valid[(self.x + i[0]*e, self.y + i[1]*e)] = True
+                    break
+                else:
+                    break
+                e += 1
+        return valid
 
 class King(Piece):
     def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="k", has_moved:bool=False):

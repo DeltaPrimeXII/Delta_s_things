@@ -46,7 +46,7 @@ class Board:
             line = []
         self.board = board
     
-    def display(self):
+    def display_board(self):
         color = True
         for y in range(8):
             for x in range(8):
@@ -54,11 +54,16 @@ class Board:
                     pygame.draw.rect(fenetre, (0, 0, 0), (x*64, y*64, 64, 64))
                 else:
                     pygame.draw.rect(fenetre, (255, 255, 255), (x*64, y*64, 64, 64))
-                if self.board[y][x].piece:
-                    fenetre.blit(font.render(self.board[y][x].piece.name, True, (127,127,127)), dest=(x*64, y*64))
                 color = not color
             color = not color
     
+    def display_pieces(self):
+        for y in range(8):
+            for x in range(8):
+                if self.board[y][x].piece:
+                    fenetre.blit(font.render(self.board[y][x].piece.name, True, (127,127,127)), dest=(x*64, y*64))
+
+
     def update_pieces(self):
         for y in range(8):
             for x in range(8):
@@ -225,7 +230,8 @@ def security():
 
 #--------------------------------------------------
 board = Board()
-board.display()
+board.display_board()
+board.display_pieces()
 
 selected_piece = None
 
@@ -249,11 +255,13 @@ while True :
 
 
     fenetre.fill(background)
-    board.display()
+    board.display_board()
 
     if selected_piece:
         for i in selected_piece.moves:
             print(i)
             pygame.draw.rect(fenetre, (255, 0, 0), (i[0]*64, i[1]*64, 64, 64))
+    
+    board.display_pieces()
 
     pygame.display.flip()

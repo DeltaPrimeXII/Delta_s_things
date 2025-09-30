@@ -99,26 +99,33 @@ class Piece:
 class Pawn(Piece):
     def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="p", has_moved:bool=False):
         Piece.__init__(self, board, x, y, color, name)
-        self.move_options = [(0, 1), (0, 2)] # 1 or 2 cases forward
+        if color:
+            self.move_options = [(0, -1), (0, -2)] # 1 or 2 cases forward (White)
+        else: #NEVER USED :skull:
+            self.move_options = [(0, 1), (0, 2)] # 1 or 2 cases forward (Black)
         self.has_moved = has_moved
     def valid_move(self):
         valid = []
+        if self.color:
+            c = -1
+        else:
+            c = 1
         # for i in self.move_options:
         #     while 0 <= self.x + i[0] <= 7 and 0 <= self.y + i[1] <= 7:
         #         if self.board.board[self.y + i[1]][self.x + i[0]].piece == None:
         #             valid[(self.x + i[0], self.y + i[1])] = True
         #         else:
         #             break
-        if 0 <= self.x <= 7 and 0 <= self.y + 1 <= 7: # normal move
-            if self.board.board[self.y + 1][self.x].piece == None:
-                valid.append((self.x, self.y + 1))
-        if 0 <= self.x <= 7 and 0 <= self.y + 2 <= 7 and not self.has_moved: # first move
-            if self.board.board[self.y + 2][self.x].piece == None:
-                valid.append((self.x, self.y + 2))
+        if 0 <= self.x <= 7 and 0 <= self.y + c <= 7: # normal move
+            if self.board.board[self.y + c][self.x].piece == None:
+                valid.append((self.x, self.y + c))
+        if 0 <= self.x <= 7 and 0 <= self.y + c*2 <= 7 and not self.has_moved: # first move
+            if self.board.board[self.y + c*2][self.x].piece == None:
+                valid.append((self.x, self.y + c*2))
         for i in range(-1, 2, 2):
-            if 0 <= self.x + i <= 7 and 0 <= self.y + 1 <= 7: # eat move
-                if self.board.board[self.y + 1][self.x + i].piece and self.board.board[self.y + 1][self.x + i].piece.color != self.color:
-                    valid.append((self.x + i, self.y + 1))
+            if 0 <= self.x + i <= 7 and 0 <= self.y + c <= 7: # eat move
+                if self.board.board[self.y + c][self.x + i].piece and self.board.board[self.y + c][self.x + i].piece.color != self.color:
+                    valid.append((self.x + i, self.y + c))
         return valid #RETURN VALID YOU PLONKER !!!!!
 
 class Rook(Piece):
@@ -258,8 +265,9 @@ while True :
     board.display_board()
 
     if selected_piece:
+        # print(selected_piece.move_options)
         for i in selected_piece.moves:
-            print(i)
+            # print(i)
             pygame.draw.rect(fenetre, (255, 0, 0), (i[0]*64, i[1]*64, 64, 64))
     
     board.display_pieces()

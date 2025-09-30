@@ -61,7 +61,10 @@ class Board:
         for y in range(8):
             for x in range(8):
                 if self.board[y][x].piece:
-                    fenetre.blit(font.render(self.board[y][x].piece.name, True, (127,127,127)), dest=(x*64, y*64))
+                    if self.board[y][x].piece.color:
+                        fenetre.blit(font.render(self.board[y][x].piece.name, True, (255,127,100)), dest=(x*64, y*64))
+                    else:
+                        fenetre.blit(font.render(self.board[y][x].piece.name, True, (100,127,255)), dest=(x*64, y*64))
 
 
     def update_pieces(self):
@@ -268,7 +271,7 @@ while True :
         # print(selected_piece.move_options)
         for i in selected_piece.moves:
             # print(i)
-            pygame.draw.rect(fenetre, (255, 0, 0), (i[0]*64, i[1]*64, 64, 64))
+            pygame.draw.rect(fenetre, (0, 200, 100), (i[0]*64, i[1]*64, 64, 64))
     
     board.display_pieces()
 

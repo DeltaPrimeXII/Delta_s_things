@@ -119,12 +119,13 @@ class Pawn(Piece):
         #             valid[(self.x + i[0], self.y + i[1])] = True
         #         else:
         #             break
-        if 0 <= self.x <= 7 and 0 <= self.y + c <= 7: # normal move
+        if 0 <= self.x <= 7 and 0 <= self.y + c <= 7: # normal move (1 case)
             if self.board.board[self.y + c][self.x].piece == None:
                 valid.append((self.x, self.y + c))
-        if 0 <= self.x <= 7 and 0 <= self.y + c*2 <= 7 and not self.has_moved: # first move
-            if self.board.board[self.y + c*2][self.x].piece == None:
-                valid.append((self.x, self.y + c*2))
+                # first move (2 cases)
+                if 0 <= self.x <= 7 and 0 <= self.y + c*2 <= 7 and not self.has_moved:
+                    if self.board.board[self.y + c*2][self.x].piece == None:
+                        valid.append((self.x, self.y + c*2))
         for i in range(-1, 2, 2):
             if 0 <= self.x + i <= 7 and 0 <= self.y + c <= 7: # eat move
                 if self.board.board[self.y + c][self.x + i].piece and self.board.board[self.y + c][self.x + i].piece.color != self.color:

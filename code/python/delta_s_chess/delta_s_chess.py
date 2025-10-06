@@ -261,7 +261,10 @@ while True :
 
         if event.type == MOUSEBUTTONDOWN:
             if 0 <= case_pos[0] <= 7 and 0 <= case_pos[1] <= 7:
-                selected_piece = board.board[case_pos[1]][case_pos[0]].piece
+                if selected_piece == board.board[case_pos[1]][case_pos[0]].piece:
+                    selected_piece = None
+                else:
+                    selected_piece = board.board[case_pos[1]][case_pos[0]].piece
                 board.update_pieces()
 
 

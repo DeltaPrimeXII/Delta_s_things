@@ -263,6 +263,10 @@ while True :
             if 0 <= case_pos[0] <= 7 and 0 <= case_pos[1] <= 7:
                 if selected_piece == board.board[case_pos[1]][case_pos[0]].piece:
                     selected_piece = None
+                elif (selected_piece) and (case_pos in selected_piece.valid_move()):
+                    board.board[case_pos[1]][case_pos[0]].piece = selected_piece
+                    board.board[selected_piece.y][selected_piece.x].piece = None
+                    selected_piece.x, selected_piece.y = case_pos[0], case_pos[1]#TODO make a method for that
                 else:
                     selected_piece = board.board[case_pos[1]][case_pos[0]].piece
                 board.update_pieces()

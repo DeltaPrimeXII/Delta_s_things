@@ -85,8 +85,8 @@ class Case:
 #==================================================
 
 class Piece:
-    def __init__(self, board:"Board", x:int, y:int, color:bool, name:str="p"):
-        self.board = board
+    def __init__(self, game:"Board", x:int, y:int, color:bool, name:str="p"):
+        self.game = game
         self.x = x
         self.y = y
         self.color = color # False = black, True = white
@@ -100,8 +100,8 @@ class Piece:
 #==================================================
 
 class Pawn(Piece):
-    def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="p", has_moved:bool=False):
-        Piece.__init__(self, board, x, y, color, name)
+    def __init__(self, game:"Board", x:int=0, y:int=0, color:bool=False, name:str="p", has_moved:bool=False):
+        Piece.__init__(self, game, x, y, color, name)
         if color:
             self.move_options = [(0, -1), (0, -2)] # 1 or 2 cases forward (White)
         else: #NEVER USED :skull:
@@ -115,26 +115,26 @@ class Pawn(Piece):
             c = 1
         # for i in self.move_options:
         #     while 0 <= self.x + i[0] <= 7 and 0 <= self.y + i[1] <= 7:
-        #         if self.board.board[self.y + i[1]][self.x + i[0]].piece == None:
+        #         if self.game.board[self.y + i[1]][self.x + i[0]].piece == None:
         #             valid[(self.x + i[0], self.y + i[1])] = True
         #         else:
         #             break
         if 0 <= self.x <= 7 and 0 <= self.y + c <= 7: # normal move (1 case)
-            if self.board.board[self.y + c][self.x].piece == None:
+            if self.game.board[self.y + c][self.x].piece == None:
                 valid.append((self.x, self.y + c))
                 # first move (2 cases)
                 if 0 <= self.x <= 7 and 0 <= self.y + c*2 <= 7 and not self.has_moved:
-                    if self.board.board[self.y + c*2][self.x].piece == None:
+                    if self.game.board[self.y + c*2][self.x].piece == None:
                         valid.append((self.x, self.y + c*2))
         for i in range(-1, 2, 2):
             if 0 <= self.x + i <= 7 and 0 <= self.y + c <= 7: # eat move
-                if self.board.board[self.y + c][self.x + i].piece and self.board.board[self.y + c][self.x + i].piece.color != self.color:
+                if self.game.board[self.y + c][self.x + i].piece and self.game.board[self.y + c][self.x + i].piece.color != self.color:
                     valid.append((self.x + i, self.y + c))
         return valid #RETURN VALID YOU PLONKER !!!!!
 
 class Rook(Piece):
-    def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="r", has_moved:bool=False):
-        Piece.__init__(self, board, x, y, color, name)
+    def __init__(self, game:"Board", x:int=0, y:int=0, color:bool=False, name:str="r", has_moved:bool=False):
+        Piece.__init__(self, game, x, y, color, name)
         self.move_options = [(0, 1), (1, 0), (0, -1), (-1, 0)] # each direction horizontaly and verticaly
         self.has_moved = has_moved
     def valid_move(self):
@@ -142,9 +142,9 @@ class Rook(Piece):
         for i in self.move_options:
             e = 1
             while 0 <= self.x + i[0]*e <= 7 and 0 <= self.y + i[1]*e <= 7:
-                if self.board.board[self.y + i[1]*e][self.x + i[0]*e].piece == None:
+                if self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece == None:
                     valid.append((self.x + i[0]*e, self.y + i[1]*e))
-                elif self.board.board[self.y + i[1]*e][self.x + i[0]*e].piece.color != self.color:
+                elif self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.color != self.color:
                     valid.append((self.x + i[0]*e, self.y + i[1]*e))
                     break
                 else:
@@ -153,17 +153,17 @@ class Rook(Piece):
         return valid
 
 class Bishop(Piece):
-    def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="b"):
-        Piece.__init__(self, board, x, y, color, name)
+    def __init__(self, game:"Board", x:int=0, y:int=0, color:bool=False, name:str="b"):
+        Piece.__init__(self, game, x, y, color, name)
         self.move_options = [(1, 1), (1, -1), (-1, -1), (-1, 1)] # each direction diagonaly
     def valid_move(self):
         valid = []
         for i in self.move_options:
             e = 1
             while 0 <= self.x + i[0]*e <= 7 and 0 <= self.y + i[1]*e <= 7:
-                if self.board.board[self.y + i[1]*e][self.x + i[0]*e].piece == None:
+                if self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece == None:
                     valid.append((self.x + i[0]*e, self.y + i[1]*e))
-                elif self.board.board[self.y + i[1]*e][self.x + i[0]*e].piece.color != self.color:
+                elif self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.color != self.color:
                     valid.append((self.x + i[0]*e, self.y + i[1]*e))
                     break
                 else:
@@ -172,31 +172,31 @@ class Bishop(Piece):
         return valid
 
 class Knight(Piece):
-    def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="n"):
-        Piece.__init__(self, board, x, y, color, name)
+    def __init__(self, game:"Board", x:int=0, y:int=0, color:bool=False, name:str="n"):
+        Piece.__init__(self, game, x, y, color, name)
         self.move_options = [(-1, 2), (1, 2), (-1, -2), (1, -2), (2, 1), (-2, 1), (2, -1), (-2, -1)] # L pattern
     def valid_move(self):
         valid = []
         for i in self.move_options:
             if 0 <= self.x + i[0] <= 7 and 0 <= self.y + i[1] <= 7:
-                if self.board.board[self.y + i[1]][self.x + i[0]].piece == None:
+                if self.game.board[self.y + i[1]][self.x + i[0]].piece == None:
                     valid.append((self.x + i[0], self.y + i[1]))
-                elif self.board.board[self.y + i[1]][self.x + i[0]].piece.color != self.color:
+                elif self.game.board[self.y + i[1]][self.x + i[0]].piece.color != self.color:
                     valid.append((self.x + i[0], self.y + i[1]))
         return valid
 
 class Queen(Piece):
-    def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="q"):
-        Piece.__init__(self, board, x, y, color, name)
+    def __init__(self, game:"Board", x:int=0, y:int=0, color:bool=False, name:str="q"):
+        Piece.__init__(self, game, x, y, color, name)
         self.move_options = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, -1), (-1, 1)] # each direction (Rook + Bishop)
     def valid_move(self):
         valid = []
         for i in self.move_options:
             e = 1
             while 0 <= self.x + i[0]*e <= 7 and 0 <= self.y + i[1]*e <= 7:
-                if self.board.board[self.y + i[1]*e][self.x + i[0]*e].piece == None:
+                if self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece == None:
                     valid.append((self.x + i[0]*e, self.y + i[1]*e))
-                elif self.board.board[self.y + i[1]*e][self.x + i[0]*e].piece.color != self.color:
+                elif self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.color != self.color:
                     valid.append((self.x + i[0]*e, self.y + i[1]*e))
                     break
                 else:
@@ -205,17 +205,17 @@ class Queen(Piece):
         return valid
 
 class King(Piece):
-    def __init__(self, board:"Board", x:int=0, y:int=0, color:bool=False, name:str="k", has_moved:bool=False):
-        Piece.__init__(self, board, x, y, color, name)
+    def __init__(self, game:"Board", x:int=0, y:int=0, color:bool=False, name:str="k", has_moved:bool=False):
+        Piece.__init__(self, game, x, y, color, name)
         self.move_options = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, -1), (-1, 1)] # Queen but bad
         self.has_moved = has_moved
     def valid_move(self):
         valid = []
         for i in self.move_options:
             if 0 <= self.x + i[0] <= 7 and 0 <= self.y + i[1] <= 7:
-                if self.board.board[self.y + i[1]][self.x + i[0]].piece == None:
+                if self.game.board[self.y + i[1]][self.x + i[0]].piece == None:
                     valid.append((self.x + i[0], self.y + i[1]))
-                elif self.board.board[self.y + i[1]][self.x + i[0]].piece.color != self.color:
+                elif self.game.board[self.y + i[1]][self.x + i[0]].piece.color != self.color:
                     valid.append((self.x + i[0], self.y + i[1]))
         return valid
 
@@ -240,9 +240,9 @@ def security():
 #--------------------------------------------------
 
 #--------------------------------------------------
-board = Board()
-board.display_board()
-board.display_pieces()
+game = Board()
+game.display_board()
+game.display_pieces()
 
 selected_piece = None
 
@@ -261,19 +261,19 @@ while True :
 
         if event.type == MOUSEBUTTONDOWN:
             if 0 <= case_pos[0] <= 7 and 0 <= case_pos[1] <= 7:
-                if selected_piece == board.board[case_pos[1]][case_pos[0]].piece:
+                if selected_piece == game.board[case_pos[1]][case_pos[0]].piece:
                     selected_piece = None
                 elif (selected_piece) and (case_pos in selected_piece.valid_move()):
-                    board.board[case_pos[1]][case_pos[0]].piece = selected_piece
-                    board.board[selected_piece.y][selected_piece.x].piece = None
+                    game.board[case_pos[1]][case_pos[0]].piece = selected_piece
+                    game.board[selected_piece.y][selected_piece.x].piece = None
                     selected_piece.x, selected_piece.y = case_pos[0], case_pos[1]#TODO make a method for that
                 else:
-                    selected_piece = board.board[case_pos[1]][case_pos[0]].piece
-                board.update_pieces()
+                    selected_piece = game.board[case_pos[1]][case_pos[0]].piece
+                game.update_pieces()
 
 
     fenetre.fill(background)
-    board.display_board()
+    game.display_board()
 
     if selected_piece:
         # print(selected_piece.move_options)
@@ -281,6 +281,6 @@ while True :
             # print(i)
             pygame.draw.rect(fenetre, (0, 200, 100), (i[0]*64, i[1]*64, 64, 64))
     
-    board.display_pieces()
+    game.display_pieces()
 
     pygame.display.flip()

@@ -96,6 +96,12 @@ class Piece:
     
     def update_moves(self):
         self.moves = self.valid_move()
+    
+    def move(self, x, y):
+        last_pos = (self.x, self.y)
+        self.game.board[y][x].piece = self
+        self.game.board[last_pos[1]][last_pos[0]].piece = None
+        self.x, self.y = x, y
         
 #==================================================
 
@@ -264,9 +270,7 @@ while True :
                 if selected_piece == game.board[case_pos[1]][case_pos[0]].piece:
                     selected_piece = None
                 elif (selected_piece) and (case_pos in selected_piece.valid_move()):
-                    game.board[case_pos[1]][case_pos[0]].piece = selected_piece
-                    game.board[selected_piece.y][selected_piece.x].piece = None
-                    selected_piece.x, selected_piece.y = case_pos[0], case_pos[1]#TODO make a method for that
+                    selected_piece.move(case_pos[0], case_pos[1])
                 else:
                     selected_piece = game.board[case_pos[1]][case_pos[0]].piece
                 game.update_pieces()

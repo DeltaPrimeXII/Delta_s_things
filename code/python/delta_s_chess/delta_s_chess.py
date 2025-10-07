@@ -247,6 +247,7 @@ def security():
 
 #--------------------------------------------------
 game = Board()
+turn = True #True == white, False == black
 game.display_board()
 game.display_pieces()
 
@@ -269,8 +270,12 @@ while True :
             if 0 <= case_pos[0] <= 7 and 0 <= case_pos[1] <= 7:
                 if selected_piece == game.board[case_pos[1]][case_pos[0]].piece:
                     selected_piece = None
-                elif (selected_piece) and (case_pos in selected_piece.valid_move()):
+                elif (selected_piece) and (case_pos in selected_piece.valid_move()) and (selected_piece.color == turn):
                     selected_piece.move(case_pos[0], case_pos[1])
+                    selected_piece = None
+                    turn = not turn
+                elif (game.board[case_pos[1]][case_pos[0]].piece is not None) and (game.board[case_pos[1]][case_pos[0]].piece.color != turn):
+                    selected_piece = None
                 else:
                     selected_piece = game.board[case_pos[1]][case_pos[0]].piece
                 game.update_pieces()

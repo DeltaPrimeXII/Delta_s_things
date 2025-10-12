@@ -113,13 +113,13 @@ class Piece:
         
 #==================================================
 
-class Pawn(Piece):
+class Pawn(Piece):#TODO fix pawn's first move
     def __init__(self, game:"Board", x:int=0, y:int=0, color:bool=False, name:str="p", has_moved:bool=False):
         Piece.__init__(self, game, x, y, color, name)
-        if color:
-            self.move_options = [(0, -1), (0, -2)] # 1 or 2 cases forward (White)
-        else: #NEVER USED :skull:
-            self.move_options = [(0, 1), (0, 2)] # 1 or 2 cases forward (Black)
+        # if color:
+        #     self.move_options = [(0, -1), (0, -2)] # 1 or 2 cases forward (White)
+        # else:
+        #     self.move_options = [(0, 1), (0, 2)] # 1 or 2 cases forward (Black)
         self.has_moved = has_moved
     def valid_move(self):
         valid = []
@@ -147,15 +147,16 @@ class Pawn(Piece):
         return valid #RETURN VALID YOU PLONKER !!!!!
 
 class Rook(Piece):
+    move_options = [(0, 1), (1, 0), (0, -1), (-1, 0)] # each direction horizontaly and verticaly
     def __init__(self, game:"Board", x:int=0, y:int=0, color:bool=False, name:str="r", has_moved:bool=False):
         Piece.__init__(self, game, x, y, color, name)
-        self.move_options = [(0, 1), (1, 0), (0, -1), (-1, 0)] # each direction horizontaly and verticaly
+        # self.move_options = [(0, 1), (1, 0), (0, -1), (-1, 0)]
         self.has_moved = has_moved
     def valid_move(self):
         valid = []
-        for i in self.move_options:
+        for i in Rook.move_options:
             e = 1
-            while 0 <= self.x + i[0]*e <= 7 and 0 <= self.y + i[1]*e <= 7:
+            while is_on_board(self, (i[0]*e, i[1]*e)):
                 if self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece == None:
                     valid.append((self.x + i[0]*e, self.y + i[1]*e))
                 elif self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.color != self.color:
@@ -167,14 +168,15 @@ class Rook(Piece):
         return valid
 
 class Bishop(Piece):
+    move_options = [(1, 1), (1, -1), (-1, -1), (-1, 1)] # each direction diagonaly
     def __init__(self, game:"Board", x:int=0, y:int=0, color:bool=False, name:str="b"):
         Piece.__init__(self, game, x, y, color, name)
-        self.move_options = [(1, 1), (1, -1), (-1, -1), (-1, 1)] # each direction diagonaly
+        # self.move_options = [(1, 1), (1, -1), (-1, -1), (-1, 1)]
     def valid_move(self):
         valid = []
-        for i in self.move_options:
+        for i in Bishop.move_options:
             e = 1
-            while 0 <= self.x + i[0]*e <= 7 and 0 <= self.y + i[1]*e <= 7:
+            while is_on_board(self, (i[0]*e, i[1]*e)):
                 if self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece == None:
                     valid.append((self.x + i[0]*e, self.y + i[1]*e))
                 elif self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.color != self.color:
@@ -186,13 +188,14 @@ class Bishop(Piece):
         return valid
 
 class Knight(Piece):
+    move_options = [(-1, 2), (1, 2), (-1, -2), (1, -2), (2, 1), (-2, 1), (2, -1), (-2, -1)] # L pattern
     def __init__(self, game:"Board", x:int=0, y:int=0, color:bool=False, name:str="n"):
         Piece.__init__(self, game, x, y, color, name)
-        self.move_options = [(-1, 2), (1, 2), (-1, -2), (1, -2), (2, 1), (-2, 1), (2, -1), (-2, -1)] # L pattern
+        # self.move_options = [(-1, 2), (1, 2), (-1, -2), (1, -2), (2, 1), (-2, 1), (2, -1), (-2, -1)]
     def valid_move(self):
         valid = []
-        for i in self.move_options:
-            if 0 <= self.x + i[0] <= 7 and 0 <= self.y + i[1] <= 7:
+        for i in Knight.move_options:
+            if is_on_board(self, i):
                 if self.game.board[self.y + i[1]][self.x + i[0]].piece == None:
                     valid.append((self.x + i[0], self.y + i[1]))
                 elif self.game.board[self.y + i[1]][self.x + i[0]].piece.color != self.color:
@@ -200,14 +203,15 @@ class Knight(Piece):
         return valid
 
 class Queen(Piece):
+    move_options = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, -1), (-1, 1)] # each direction (Rook + Bishop)
     def __init__(self, game:"Board", x:int=0, y:int=0, color:bool=False, name:str="q"):
         Piece.__init__(self, game, x, y, color, name)
-        self.move_options = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, -1), (-1, 1)] # each direction (Rook + Bishop)
+        # self.move_options = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, -1), (-1, 1)]
     def valid_move(self):
         valid = []
-        for i in self.move_options:
+        for i in Queen.move_options:
             e = 1
-            while 0 <= self.x + i[0]*e <= 7 and 0 <= self.y + i[1]*e <= 7:
+            while is_on_board(self, (i[0]*e, i[1]*e)):
                 if self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece == None:
                     valid.append((self.x + i[0]*e, self.y + i[1]*e))
                 elif self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.color != self.color:
@@ -219,22 +223,23 @@ class Queen(Piece):
         return valid
 
 class King(Piece):
+    move_options = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, -1), (-1, 1)] # Queen but bad
     def __init__(self, game:"Board", x:int=0, y:int=0, color:bool=False, name:str="k", has_moved:bool=False):
         Piece.__init__(self, game, x, y, color, name)
-        self.move_options = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, -1), (-1, 1)] # Queen but bad
+        # self.move_options = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, -1), (-1, 1)]
         self.has_moved = has_moved
     def valid_move(self):
         valid = []
-        for i in self.move_options:
-            if 0 <= self.x + i[0] <= 7 and 0 <= self.y + i[1] <= 7:
+        for i in King.move_options:
+            if is_on_board(self, i):
                 if self.game.board[self.y + i[1]][self.x + i[0]].piece == None:
                     valid.append((self.x + i[0], self.y + i[1]))
                 elif self.game.board[self.y + i[1]][self.x + i[0]].piece.color != self.color:
                     valid.append((self.x + i[0], self.y + i[1]))
         return valid
     def is_check(self):
-        for i in [(-1, 2), (1, 2), (-1, -2), (1, -2), (2, 1), (-2, 1), (2, -1), (-2, -1)]:
-            if 0 <= self.x + i[0] <= 7 and 0 <= self.y + i[1] <= 7 and self.game.board[self.y + i[1]][self.x + i[0]].piece:
+        for i in Knight.move_options:
+            if is_on_board(self, i) and self.game.board[self.y + i[1]][self.x + i[0]].piece:
                 if self.game.board[self.y + i[1]][self.x + i[0]].piece.name == "n" and self.game.board[self.y + i[1]][self.x + i[0]].piece.color != self.color:
                     return True
         return False
@@ -254,7 +259,11 @@ def security():
         pygame.display.quit()
         sys.exit()
 #--------------------------------------------------
-
+def is_on_board(piece, coord):
+    if 0 <= piece.x + coord[0] <= 7 and 0 <= piece.y + coord[1] <= 7:
+        return True
+    else:
+        return False
 #--------------------------------------------------
 
 #--------------------------------------------------

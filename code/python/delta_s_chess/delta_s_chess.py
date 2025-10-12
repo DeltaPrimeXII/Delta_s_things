@@ -232,6 +232,12 @@ class King(Piece):
                 elif self.game.board[self.y + i[1]][self.x + i[0]].piece.color != self.color:
                     valid.append((self.x + i[0], self.y + i[1]))
         return valid
+    def is_check(self):
+        for i in [(-1, 2), (1, 2), (-1, -2), (1, -2), (2, 1), (-2, 1), (2, -1), (-2, -1)]:
+            if 0 <= self.x + i[0] <= 7 and 0 <= self.y + i[1] <= 7 and self.game.board[self.y + i[1]][self.x + i[0]].piece:
+                if self.game.board[self.y + i[1]][self.x + i[0]].piece.name == "n" and self.game.board[self.y + i[1]][self.x + i[0]].piece.color != self.color:
+                    return True
+        return False
 
 #==================================================
 piece_name = {
@@ -287,8 +293,12 @@ while True :
                 else:
                     selected_piece = game.board[case_pos[1]][case_pos[0]].piece
                 game.update_pieces()
+        
+        if event.type == KEYDOWN and event.key == K_SPACE:
+            print(game.board[7][4].piece.is_check())
 
 
+    # Rendering the game -------------------------
     fenetre.fill(background)
     game.display_board()
 

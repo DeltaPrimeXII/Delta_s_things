@@ -133,15 +133,15 @@ class Pawn(Piece):#TODO fix pawn's first move
         #             valid[(self.x + i[0], self.y + i[1])] = True
         #         else:
         #             break
-        if 0 <= self.x <= 7 and 0 <= self.y + c <= 7: # normal move (1 case)
+        if is_on_board(self, (0, c)): # normal move (1 case)
             if self.game.board[self.y + c][self.x].piece == None:
                 valid.append((self.x, self.y + c))
                 # first move (2 cases)
-                if 0 <= self.x <= 7 and 0 <= self.y + c*2 <= 7 and not self.has_moved:
+                if is_on_board(self, (0, c*2)) and not self.has_moved:
                     if self.game.board[self.y + c*2][self.x].piece == None:
                         valid.append((self.x, self.y + c*2))
         for i in range(-1, 2, 2):
-            if 0 <= self.x + i <= 7 and 0 <= self.y + c <= 7: # eat move
+            if is_on_board(self, (i, c)): # eat move
                 if self.game.board[self.y + c][self.x + i].piece and self.game.board[self.y + c][self.x + i].piece.color != self.color:
                     valid.append((self.x + i, self.y + c))
         return valid #RETURN VALID YOU PLONKER !!!!!
@@ -157,13 +157,14 @@ class Rook(Piece):
         for i in Rook.move_options:
             e = 1
             while is_on_board(self, (i[0]*e, i[1]*e)):
-                if self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece == None:
-                    valid.append((self.x + i[0]*e, self.y + i[1]*e))
-                elif self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.color != self.color:
-                    valid.append((self.x + i[0]*e, self.y + i[1]*e))
-                    break
-                else:
-                    break
+                match is_valid(self, (i[0]*e, i[1]*e)):
+                    case (True, True):
+                        valid.append((self.x + i[0]*e, self.y + i[1]*e))
+                    case (True, False):
+                        valid.append((self.x + i[0]*e, self.y + i[1]*e))
+                        break
+                    case (False, False):
+                        break
                 e += 1
         return valid
 
@@ -177,13 +178,14 @@ class Bishop(Piece):
         for i in Bishop.move_options:
             e = 1
             while is_on_board(self, (i[0]*e, i[1]*e)):
-                if self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece == None:
-                    valid.append((self.x + i[0]*e, self.y + i[1]*e))
-                elif self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.color != self.color:
-                    valid.append((self.x + i[0]*e, self.y + i[1]*e))
-                    break
-                else:
-                    break
+                match is_valid(self, (i[0]*e, i[1]*e)):
+                    case (True, True):
+                        valid.append((self.x + i[0]*e, self.y + i[1]*e))
+                    case (True, False):
+                        valid.append((self.x + i[0]*e, self.y + i[1]*e))
+                        break
+                    case (False, False):
+                        break
                 e += 1
         return valid
 
@@ -196,9 +198,7 @@ class Knight(Piece):
         valid = []
         for i in Knight.move_options:
             if is_on_board(self, i):
-                if self.game.board[self.y + i[1]][self.x + i[0]].piece == None:
-                    valid.append((self.x + i[0], self.y + i[1]))
-                elif self.game.board[self.y + i[1]][self.x + i[0]].piece.color != self.color:
+                if is_valid(self, i)[0]:
                     valid.append((self.x + i[0], self.y + i[1]))
         return valid
 
@@ -212,13 +212,14 @@ class Queen(Piece):
         for i in Queen.move_options:
             e = 1
             while is_on_board(self, (i[0]*e, i[1]*e)):
-                if self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece == None:
-                    valid.append((self.x + i[0]*e, self.y + i[1]*e))
-                elif self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.color != self.color:
-                    valid.append((self.x + i[0]*e, self.y + i[1]*e))
-                    break
-                else:
-                    break
+                match is_valid(self, (i[0]*e, i[1]*e)):
+                    case (True, True):
+                        valid.append((self.x + i[0]*e, self.y + i[1]*e))
+                    case (True, False):
+                        valid.append((self.x + i[0]*e, self.y + i[1]*e))
+                        break
+                    case (False, False):
+                        break
                 e += 1
         return valid
 
@@ -232,9 +233,7 @@ class King(Piece):
         valid = []
         for i in King.move_options:
             if is_on_board(self, i):
-                if self.game.board[self.y + i[1]][self.x + i[0]].piece == None:
-                    valid.append((self.x + i[0], self.y + i[1]))
-                elif self.game.board[self.y + i[1]][self.x + i[0]].piece.color != self.color:
+                if is_valid(self, i)[0]:
                     valid.append((self.x + i[0], self.y + i[1]))
         return valid
     def is_check(self):
@@ -265,6 +264,13 @@ def is_on_board(piece, coord):
     else:
         return False
 #--------------------------------------------------
+def is_valid(piece, coord):
+    if piece.game.board[piece.y + coord[1]][piece.x + coord[0]].piece == None:
+        return (True, True) # valid, keep checking
+    elif piece.game.board[piece.y + coord[1]][piece.x + coord[0]].piece.color != piece.color:
+        return (True, False) # valid, stop checking
+    else:
+        return (False, False) # invalid, stop checking
 
 #--------------------------------------------------
 

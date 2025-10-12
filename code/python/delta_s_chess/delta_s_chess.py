@@ -67,6 +67,14 @@ class Board:
                         fenetre.blit(font.render(self.board[y][x].piece.name, True, (100,127,255)), dest=(x*64, y*64))
 
 
+    def display_ui(self, turn):
+        if turn:
+            text = "White"
+        else:
+            text = "Black"
+        fenetre.blit(font.render(f"{text}'s turn", True, (255, 255, 255)), dest=(64*8+10, 10))
+
+
     def update_pieces(self):
         for y in range(8):
             for x in range(8):
@@ -291,5 +299,6 @@ while True :
             pygame.draw.rect(fenetre, (0, 200, 100), (i[0]*64, i[1]*64, 64, 64))
     
     game.display_pieces()
+    game.display_ui(turn)
 
     pygame.display.flip()

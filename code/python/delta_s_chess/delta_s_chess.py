@@ -123,10 +123,7 @@ class Pawn(Piece):#TODO fix pawn's first move
         self.has_moved = has_moved
     def valid_move(self):
         valid = []
-        if self.color:
-            c = -1
-        else:
-            c = 1
+        c = direction(self.color)
         # for i in self.move_options:
         #     while 0 <= self.x + i[0] <= 7 and 0 <= self.y + i[1] <= 7:
         #         if self.game.board[self.y + i[1]][self.x + i[0]].piece == None:
@@ -225,10 +222,12 @@ class Queen(Piece):
 
 class King(Piece):
     move_options = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, -1), (-1, 1)] # Queen but bad
+
     def __init__(self, game:"Board", x:int=0, y:int=0, color:bool=False, name:str="k", has_moved:bool=False):
         Piece.__init__(self, game, x, y, color, name)
         # self.move_options = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, -1), (-1, 1)]
         self.has_moved = has_moved
+
     def valid_move(self):
         valid = []
         for i in King.move_options:
@@ -236,38 +235,35 @@ class King(Piece):
                 if is_valid(self, i)[0]:
                     valid.append((self.x + i[0], self.y + i[1]))
         return valid
+    
     def is_checked(self):
-        if self.color:
-            c = -1
-        else:
-            c = 1
+        c = direction(self.color)
         for i in Knight.move_options:
-            if is_on_board(self, i) and self.game.board[self.y + i[1]][self.x + i[0]].piece:
-                if self.game.board[self.y + i[1]][self.x + i[0]].piece.name == "n" and self.game.board[self.y + i[1]][self.x + i[0]].piece.color != self.color:
+            if is_on_board(self, i) and has_piece(self, i):
+                if that_piece(self, i).name == "n" and that_piece(self, i).color != self.color:
                     return True
         for i in Rook.move_options:
             e = 1
             while is_on_board(self, (i[0]*e, i[1]*e)):
-                if self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece:
-                    if self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.color == self.color:
+                if has_piece(self, (i[0]*e, i[1]*e)):
+                    if that_piece(self, (i[0]*e, i[1]*e)).color == self.color:
                         break
-                    if (self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.name == "q" or self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.name == "r") and self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.color != self.color:
+                    if (that_piece(self, (i[0]*e, i[1]*e)).name == "q" or that_piece(self, (i[0]*e, i[1]*e)).name == "r") and that_piece(self, (i[0]*e, i[1]*e)).color != self.color:
                         return True
                 e += 1
         for i in Bishop.move_options:
             e = 1
             while is_on_board(self, (i[0]*e, i[1]*e)):
-                if self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece:
-                    if self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.color == self.color:
+                if has_piece(self, (i[0]*e, i[1]*e)):
+                    if that_piece(self, (i[0]*e, i[1]*e)).color == self.color:
                         break
-                    if (self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.name == "q" or self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.name == "b") and self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.color != self.color:
+                    if (that_piece(self, (i[0]*e, i[1]*e)).name == "q" or that_piece(self, (i[0]*e, i[1]*e)).name == "b") and that_piece(self, (i[0]*e, i[1]*e)).color != self.color:
                         return True
                 e += 1
         for i in [(-1, c), (1, c)]:
-            if is_on_board(self, i) and self.game.board[self.y + i[1]][self.x + i[0]].piece:
-                if self.game.board[self.y + i[1]][self.x + i[0]].piece.name == "p" and self.game.board[self.y + i[1]][self.x + i[0]].piece.color != self.color:
+            if is_on_board(self, i) and has_piece(self, i):
+                if that_piece(self, i).name == "p" and that_piece(self, i).color != self.color:
                     return True
-
         return False
 
 #==================================================
@@ -285,11 +281,23 @@ def security():
         pygame.display.quit()
         sys.exit()
 #--------------------------------------------------
+def direction(color):
+    if color:
+        return -1
+    else:
+        return 1
+#--------------------------------------------------
 def is_on_board(piece, coord):
     if 0 <= piece.x + coord[0] <= 7 and 0 <= piece.y + coord[1] <= 7:
         return True
     else:
         return False
+#--------------------------------------------------
+def has_piece(piece, coord):
+    return piece.game.board[piece.y + coord[1]][piece.x + coord[0]].piece # It's the same thing ?
+#--------------------------------------------------
+def that_piece(piece, coord):
+    return piece.game.board[piece.y + coord[1]][piece.x + coord[0]].piece # It's the same thing ?
 #--------------------------------------------------
 def is_valid(piece, coord):
     if piece.game.board[piece.y + coord[1]][piece.x + coord[0]].piece == None:

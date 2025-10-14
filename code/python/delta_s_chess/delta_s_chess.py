@@ -300,7 +300,17 @@ def is_valid(piece, coord):
         return (False, False) # invalid, stop checking
 
 #--------------------------------------------------
-
+def all_moves(game):
+    all = {}
+    for y in range(8):
+        for x in range(8):
+            if game.board[y][x].piece:
+                game.board[y][x].piece.update_moves()
+                all[game.board[y][x].piece] = game.board[y][x].piece.moves
+    return all
+#--------------------------------------------------
+def remove_illegal_moves():
+    pass
 #--------------------------------------------------
 game = Board()
 turn = True #True == white, False == black

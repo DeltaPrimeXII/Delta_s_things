@@ -236,11 +236,38 @@ class King(Piece):
                 if is_valid(self, i)[0]:
                     valid.append((self.x + i[0], self.y + i[1]))
         return valid
-    def is_check(self):
+    def is_checked(self):
+        if self.color:
+            c = -1
+        else:
+            c = 1
         for i in Knight.move_options:
             if is_on_board(self, i) and self.game.board[self.y + i[1]][self.x + i[0]].piece:
                 if self.game.board[self.y + i[1]][self.x + i[0]].piece.name == "n" and self.game.board[self.y + i[1]][self.x + i[0]].piece.color != self.color:
                     return True
+        for i in Rook.move_options:
+            e = 1
+            while is_on_board(self, (i[0]*e, i[1]*e)):
+                if self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece:
+                    if self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.color == self.color:
+                        break
+                    if (self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.name == "q" or self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.name == "r") and self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.color != self.color:
+                        return True
+                e += 1
+        for i in Bishop.move_options:
+            e = 1
+            while is_on_board(self, (i[0]*e, i[1]*e)):
+                if self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece:
+                    if self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.color == self.color:
+                        break
+                    if (self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.name == "q" or self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.name == "b") and self.game.board[self.y + i[1]*e][self.x + i[0]*e].piece.color != self.color:
+                        return True
+                e += 1
+        for i in [(-1, c), (1, c)]:
+            if is_on_board(self, i) and self.game.board[self.y + i[1]][self.x + i[0]].piece:
+                if self.game.board[self.y + i[1]][self.x + i[0]].piece.name == "p" and self.game.board[self.y + i[1]][self.x + i[0]].piece.color != self.color:
+                    return True
+
         return False
 
 #==================================================
@@ -310,7 +337,7 @@ while True :
                 game.update_pieces()
         
         if event.type == KEYDOWN and event.key == K_SPACE:
-            print(game.board[7][4].piece.is_check())
+            print(game.board[7][4].piece.is_checked())
 
 
     # Rendering the game -------------------------

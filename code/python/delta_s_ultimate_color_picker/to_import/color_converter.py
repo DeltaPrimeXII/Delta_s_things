@@ -73,7 +73,10 @@ def hex_to_rgb(hex):# "FF000000"
     return (r,g,b,a)
 #====================================================================================================
 def round_rgb(rgb):
-    return (round(rgb[0]), round(rgb[1]), round(rgb[2]), rgb[3])
+    return (round(rgb[0]), round(rgb[1]), round(rgb[2]))
+#====================================================================================================
+def rgb_to_rgb(rgb):
+    return (rgb[0], rgb[1], rgb[2])
 #====================================================================================================
 def rgb_to_hsv(rgb):
 
@@ -101,7 +104,7 @@ def rgb_to_hsv(rgb):
 
     h = h % 360
 
-    return (h, s, v, rgb[3])
+    return (h, s, v)
 #====================================================================================================
 def hsv_to_rgb(hsv):
 
@@ -130,7 +133,7 @@ def hsv_to_rgb(hsv):
     g = round((g+m)*255)
     b = round((b+m)*255)
 
-    return (r, g, b, hsv[3])
+    return (r, g, b)
 #====================================================================================================
 def rgb_to_oklab(rgb):
 
@@ -161,8 +164,8 @@ def rgb_to_oklab(rgb):
     a = matrix_lms_to_oklab[1][0]*l + matrix_lms_to_oklab[1][1]*m + matrix_lms_to_oklab[1][2]*s
     b = matrix_lms_to_oklab[2][0]*l + matrix_lms_to_oklab[2][1]*m + matrix_lms_to_oklab[2][2]*s
     
-    # oklab.append(rgb[3])
-    return (L, a, b, rgb[3])
+    # oklab.append()
+    return (L, a, b)
 #====================================================================================================
 def oklab_to_rgb(oklab):
 
@@ -180,12 +183,20 @@ def oklab_to_rgb(oklab):
 
     if r > 255:
         r = 255
+    elif r < 0:
+        r = 0
+
     if g > 255:
         g = 255
+    elif g < 0:
+        g = 0
+
     if b > 255:
         b = 255
+    elif b < 0:
+        b = 0
 
-    return (r, g, b, oklab[3])
+    return (r, g, b)
 #====================================================================================================
 def oklab_to_oklch(oklab):
     
@@ -196,7 +207,7 @@ def oklab_to_oklch(oklab):
     C = sqrt((a**2)+(b**2))
     h = atan2(b, a)
 
-    return (L, C, h, oklab[3])
+    return (L, C, h)
 #====================================================================================================
 def oklch_to_oklab(oklch):
 
@@ -207,7 +218,7 @@ def oklch_to_oklab(oklch):
     a = C * cos(h)
     b = C * sin(h)
 
-    return (L, a, b, oklch[3])
+    return (L, a, b)
 #====================================================================================================
 def rgb_to_oklch(rgb):
     oklab = rgb_to_oklab(rgb)
@@ -244,7 +255,20 @@ def oklch_to_rgb(oklch):
 
 # print(oklch_to_rgb((0.5,0.37,(30/360),255)))
 
-print("color_conversion.py LOADED")
+print("color_converter.py LOADED")
 
+# liste = []
+# for r in range(0, 255, 8):
+#     for g in range(0, 255, 8):
+#         for b in range(0, 255, 8):
+#             liste.append(rgb_to_oklch((r, g, b)))
+
+# print(max([i[0] for i in liste]))
+# print(max([i[1] for i in liste]))
+# print(max([i[2] for i in liste]))
+# print("-----------------------")
+# print(min([i[0] for i in liste])) # L: 0 to 1
+# print(min([i[1] for i in liste])) # C: 0 to 0.5
+# print(min([i[2] for i in liste])) # H: -PI to PI
 
 

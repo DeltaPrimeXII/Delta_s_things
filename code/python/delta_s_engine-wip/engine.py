@@ -30,6 +30,7 @@ class Engine:
 
         @self.window.event
         def on_key_press(symbol, modifiers):
+            print(f"symbol: {symbol}, modifiers: {modifiers}")
             self.objects.append(Ball(randint(100, 500), randint(100, 500), 15, self, Vector2(10, 40)))
             self.objects.append(Ball(randint(300, 800), randint(100, 500), 15, self, Vector2(20, 0)))
             self.objects.append(Link(self.objects[len(self.objects)-2], self.objects[len(self.objects)-1], 200))

@@ -32,7 +32,7 @@ class Ball:
             x = self.x + self.velocity.x + self.engine.statics[i].x
             y = self.y + self.velocity.y + self.engine.statics[i].y
             if dot(self.engine.statics[i].normal, Vector2(x, y)) <= self.r:
-                self.velocity = symmetry(self.velocity, self.engine.statics[i].normal) * 0.95
+                self.velocity = symmetry(self.velocity, self.engine.statics[i].normal) * (Vector2(1, 1) - self.engine.statics[i].absorbtion)
         for e in self.engine.objects:
             if type(e) is Link:
                 e.apply_physics()
@@ -72,10 +72,11 @@ class Ball:
 #==================================================
 
 class WorldBoundary:
-    def __init__(self, x:float, y:float, normal:"Vector2"):
+    def __init__(self, x:float, y:float, normal:"Vector2", absorbtion=Vector2(0, 0)):
         self.x = x
         self.y = y
         self.normal = normal
+        self.absorbtion = absorbtion
 
 #==================================================
 

@@ -46,7 +46,7 @@ class Engine:
 
 if __name__ == "__main__":
     engine = Engine()
-    engine.statics.append(WorldBoundary(0, 0, Vector2(0, 1)))#Bottom
+    engine.statics.append(WorldBoundary(0, 0, Vector2(0, 1), Vector2(0.1, 0.3)))#Bottom
     engine.statics.append(WorldBoundary(0, -engine.window.height, Vector2(0, -1)))#Top
     engine.statics.append(WorldBoundary(-engine.window.width, 0, Vector2(-1, 0)))#Right
     engine.statics.append(WorldBoundary(0, 0, Vector2(1, 0)))#Left

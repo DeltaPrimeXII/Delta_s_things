@@ -1,5 +1,5 @@
 #Utilities
-
+from math import sqrt
 class Vector2:
     """Class for using simple 2D vector"""
     def __init__(self, x:float, y:float):
@@ -23,6 +23,17 @@ class Vector2:
             return Vector2(self.x * factor, self.y * factor)
         elif type(factor) is Vector2:
             return Vector2(self.x * factor.x, self.y * factor.y)#Mathematicaly incorrect but i don't care
+    
+    def __truediv__(self, divider):
+        return Vector2(self.x / divider, self.y / divider)
+
+    def __neg__(self):
+        return self * -1
+
+    def length(self):
+        return sqrt(self.x**2 + self.y**2)
+
+
 
 def dot(vec1:"Vector2", vec2:"Vector2") -> float:
     return (vec1.x * vec2.x) + (vec1.y * vec2.y)
@@ -30,19 +41,24 @@ def dot(vec1:"Vector2", vec2:"Vector2") -> float:
 def right_vector(vec:"Vector2"):
     return Vector2(vec.y, -(vec.x))
 
-def symmetry(vec:"Vector2", normal:"Vector2"):
+def symmetry(vec:"Vector2", normal:"Vector2") -> Vector2:
     """Return the symmetric of (vec) across the normal vector's surface"""
     axe = right_vector(normal)
     return (axe * dot(vec, axe) * 2) - vec
 
+def normalized(vec:"Vector2") -> Vector2:
+    return vec / vec.length()
+
+
 if __name__ == "__main__":
     test = Vector2(1, 2)
-    print(test)
+    # print(test)
     abc = test + Vector2(3, 10)
-    print(abc)
+    # print(abc)
     test += Vector2(-1, -1)
-    print(test)
-    print(abc * 10)
+    # print(test)
+    # print(abc * 10)
 
-    print(dot(test, abc))
-    print(dot(Vector2(10,0), Vector2(0, 3)))
+    # print(dot(test, abc))
+    # print(dot(Vector2(10,0), Vector2(0, 3)))
+    print(test.length())

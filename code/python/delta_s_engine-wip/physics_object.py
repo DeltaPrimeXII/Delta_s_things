@@ -86,7 +86,7 @@ class Link:
         self.ball_2 = ball_2
         self.length = length
         self.rigid = rigid
-        self.object = pyglet.shapes.Line(self.ball_1.x, self.ball_1.y, self.ball_2.x, self.ball_2.y, 5)
+        self.object = pyglet.shapes.Line(self.ball_1.x, self.ball_1.y, self.ball_2.x, self.ball_2.y, 10)
 
     def render(self) -> None:
         """Render the shape on screen"""
@@ -94,15 +94,16 @@ class Link:
 
     def apply_physics(self) -> None:
         """Handle all the physic"""
-        balls_vector = Vector2(self.ball_1.x - self.ball_2.x, self.ball_1.y - self.ball_2.y)# 1 --> 2
+        balls_vector = Vector2((self.ball_1.x + self.ball_1.velocity.x) - (self.ball_2.x + self.ball_2.velocity.x),
+                               (self.ball_1.y + self.ball_1.velocity.y) - (self.ball_2.y + self.ball_2.velocity.y))# 1 <---> 2
         current_length = balls_vector.length()
         if current_length > self.length:
-            self.ball_1.velocity -= normalized(balls_vector) * (current_length - self.length) * (1/60) / 2
-            self.ball_2.velocity += normalized(balls_vector) * (current_length - self.length) * (1/60) / 2
+            self.ball_1.velocity -= normalized(balls_vector) * (current_length - self.length) * (1/60)*2# / 2
+            self.ball_2.velocity += normalized(balls_vector) * (current_length - self.length) * (1/60)*2# / 2
             
         elif self.rigid and current_length < self.length:
-            self.ball_1.velocity += normalized(balls_vector) * (self.length - current_length) * (1/60) / 2
-            self.ball_2.velocity -= normalized(balls_vector) * (self.length - current_length) * (1/60) / 2
+            self.ball_1.velocity += normalized(balls_vector) * (self.length - current_length) * (1/60)*2# / 2
+            self.ball_2.velocity -= normalized(balls_vector) * (self.length - current_length) * (1/60)*2# / 2
 
         self.object.x = self.ball_1.x
         self.object.y = self.ball_1.y

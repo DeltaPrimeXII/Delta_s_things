@@ -36,9 +36,9 @@ class Key:
 
 #--------------------------------------------------
 
-def update_keys(key_list):
-    for key in key_list:
-        key.update()
+def update_keys(key_dict):
+    for keys in key_dict.values():
+        keys.update()
 
 #==================================================
 

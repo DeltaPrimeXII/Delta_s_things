@@ -1,78 +1,13 @@
 
-import time
 import win32api, win32con
-
-
-# time.sleep(2)
-# win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0)
-# win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0)
-# win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0)
-# win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 100)
 
 #==================================================
 
 class Key:
 
-    key_list = {
-        "l_click": win32con.VK_LBUTTON,
-        "r_click": win32con.VK_RBUTTON,
-        "a": ord("a"),
-        "b": ord("b"),
-        "c": ord("c"),
-        "d": ord("d"),
-        "e": ord("e"),
-        "f": ord("f"),
-        "g": ord("g"),
-        "h": ord("h"),
-        "i": ord("i"),
-        "j": ord("j"),
-        "k": ord("k"),
-        "l": ord("l"),
-        "m": ord("m"),
-        "n": ord("n"),
-        "o": ord("o"),
-        "p": ord("p"),
-        "q": ord("q"),
-        "r": ord("r"),
-        "s": ord("s"),
-        "t": ord("t"),
-        "u": ord("u"),
-        "v": ord("v"),
-        "w": ord("w"),
-        "x": ord("x"),
-        "y": ord("y"),
-        "z": ord("z"),
-        "echap": win32con.VK_ESCAPE,
-        "shift": win32con.VK_SHIFT,
-        "ctrl": win32con.VK_CONTROL,
-        "alt": win32con.VK_MENU,
-        "<": ord("<"),
-        ",": ord(","),
-        ";": ord(";"),
-        ":": ord(":"),
-        "!": ord("!"),
-        "ù": ord("ù"),
-        "^": ord("^"),
-        "$": ord("$"),
-        "*": ord("*"),
-
-        "²": ord("²"),
-        "&": ord("&"),
-        "é": ord("é"),
-        '"': ord('"'), #('  "  ')
-        "'": ord("'"), #("  '  ")
-        "(": ord("("),
-        "-": ord("-"),
-        "è": ord("è"),
-        "_": ord("_"),
-        "ç": ord("ç"),
-        "à": ord("à"),
-        ")": ord(")"),
-        "=": ord("="),
-    }
-
-    def __init__(self, key:str):
+    def __init__(self, key:str, code:int):
         self.key = key
+        self.code = code
         self.last_state = False
         self.state = False
 
@@ -81,7 +16,7 @@ class Key:
     
     def update(self):
         self.last_state = self.state
-        if win32api.GetAsyncKeyState(Key.key_list[self.key]) <= -32767:
+        if win32api.GetAsyncKeyState(self.code) <= -32767:
             self.state = True
         else:
             self.state = False
@@ -107,7 +42,74 @@ def update_keys(key_list):
 
 #==================================================
 
+key_list = {
+    "l_click": win32con.VK_LBUTTON,
+    "r_click": win32con.VK_RBUTTON,
+    "a": ord("a"),
+    "b": ord("b"),
+    "c": ord("c"),
+    "d": ord("d"),
+    "e": ord("e"),
+    "f": ord("f"),
+    "g": ord("g"),
+    "h": ord("h"),
+    "i": ord("i"),
+    "j": ord("j"),
+    "k": ord("k"),
+    "l": ord("l"),
+    "m": ord("m"),
+    "n": ord("n"),
+    "o": ord("o"),
+    "p": ord("p"),
+    "q": ord("q"),
+    "r": ord("r"),
+    "s": ord("s"),
+    "t": ord("t"),
+    "u": ord("u"),
+    "v": ord("v"),
+    "w": ord("w"),
+    "x": ord("x"),
+    "y": ord("y"),
+    "z": ord("z"),
+    "echap": win32con.VK_ESCAPE,
+    "shift": win32con.VK_SHIFT,
+    "ctrl": win32con.VK_CONTROL,
+    "alt": win32con.VK_MENU,
+    "<": ord("<"),
+    ",": ord(","),
+    ";": ord(";"),
+    ":": ord(":"),
+    "!": ord("!"),
+    "ù": ord("ù"),
+    "^": ord("^"),
+    "$": ord("$"),
+    "*": ord("*"),
+
+    "²": ord("²"), #²
+    "&": ord("&"), #1
+    "é": ord("é"), #2
+    '"': ord('"'), #3 ( " )
+    "'": ord("'"), #4 ( ' )
+    "(": ord("("), #5
+    "-": ord("-"), #6
+    "è": ord("è"), #7
+    "_": ord("_"), #8
+    "ç": ord("ç"), #9
+    "à": ord("à"), #0
+    ")": ord(")"), #°
+    "=": ord("="), #+
+}
+
+#key is the variable intended to be used in other scripts
+key = {}
+for k in key_list.keys():
+    key[k] = Key(k, key_list[k])
+
+#--------------------------------------------------
+
 if __name__ == "__main__":
+
+    pass
 
     # state_list = {
     #     "just_pressed": -32768,
@@ -115,9 +117,5 @@ if __name__ == "__main__":
     #     "just_released": 1,
     #     "released": 0
     # }
-
-    key = {}
-    for k in Key.key_list:
-        key[k] = Key(k)
 
 #==================================================

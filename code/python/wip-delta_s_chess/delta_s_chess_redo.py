@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 from _libraries import keyboard as kb
+from render import *
 
 #==================================================
 
@@ -31,6 +32,7 @@ class Game_Window:
         def on_draw():
             self.window.clear()
             # self.sprite.draw()
+            render_board(8)
 
         @self.window.event
         def on_key_press(symbol, modifiers):

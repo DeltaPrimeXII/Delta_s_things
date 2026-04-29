@@ -22,6 +22,7 @@ def render_board(board:"Board"):
             i = -i
         e = -e
         i = e
+    pyglet.shapes.Rectangle(x=8*64 + 8, y=0, width=16, height=64*8, color=color[1 if board.turn%2 == 0 else -1]).draw()
 
 def render_pieces(board:"Board"):
     for t in board.team_list:

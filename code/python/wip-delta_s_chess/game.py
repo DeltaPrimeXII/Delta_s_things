@@ -7,20 +7,19 @@ class Coord:
     def __init__(self, x=0, y=0):
         self.x = x
         self.y = y
-
+    #---------------
     def __repr__(self):
         return f"Coord({self.x}, {self.y})"
-
+    #---------------
     def __eq__(self, other) -> bool:
         return self.x == other.x and self.y == other.y
-
+    #---------------
     def __add__(self, adder:tuple) -> "Coord":
         return Coord(self.x + adder[0], self.y + adder[1])
-    
+    #---------------    
     def __sub__(self, subber:tuple) -> "Coord":
         return Coord(self.x - subber[0], self.y - subber[1])
-
-    #TODO change this
+    #---------------
     def __mul__(self, factor) -> "Coord":
         if type(factor) == int or type(factor) == float:
             return Coord(self.x * factor, self.y * factor)
@@ -40,10 +39,10 @@ class Piece:
         self.color = color
         self.moves = []
         self.controled_cases = []
-    
+    #---------------    
     def __repr__(self):
-        return f"{"w" if self.color == 0 else "b"}_{self.name}"
-    
+        return f"{'w' if self.color == 0 else 'b'}_{self.name}"
+    #---------------   
     def can_move(self, coord) -> bool:
             x, y = coord.x, coord.y
             if in_bound(x, y):# (in_bound)
@@ -55,15 +54,7 @@ class Piece:
                     self.moves.append(coord)
                     return True
             return False
-
-    # #TODO
-    # def remove_illegal_moves(self):
-    #     pass
-
-    # def update_moves(self):
-    #     self.set_all_moves()
-    #     self.remove_illegal_moves()
-
+    #---------------
     def move(self, coord:"Coord"):
         x, y = coord.x, coord.y
         if self.board[x][y]:
@@ -73,6 +64,25 @@ class Piece:
         self.pos = coord
         if hasattr(self, "has_moved"):
             self.has_moved = True
+    #---------------
+    def remove_illegal_moves(self):
+        king = self.board.kings[self.color]
+        if king.is_checked:
+
+            for pin in king.pinned_pieces:
+                if self == pin[0]:
+                    possible = []
+                    for m in self.moves:
+                        if m in pin[1]:
+                            possible.append(m)
+                    self.moves = possible
+
+            if king.attacking_piece:
+                possible = []
+                for m in self.moves:
+                    if m in king.attacking_piece[1]:
+                        possible.append(m)
+                self.moves = possible
 
 #--------------------------------------------------
 
@@ -81,8 +91,7 @@ class Pawn(Piece):
     def __init__(self, board:"Board", x=0, y=0, color= 0):
         Piece.__init__(self, board, "pawn", x, y, color)
         self.has_moved = False
-
-
+    #---------------
     def set_all_moves(self) -> None:
         self.moves = []
         self.controled_cases = []
@@ -110,7 +119,7 @@ class Knight(Piece):
 
     def __init__(self, board:"Board", x=0, y=0, color= 0):
         Piece.__init__(self, board, "knight", x, y, color)
-
+    #---------------
     def set_all_moves(self) -> None:
         self.moves = []
         self.controled_cases = []
@@ -125,7 +134,7 @@ class Bishop(Piece):
 
     def __init__(self, board:"Board", x=0, y=0, color= 0):
         Piece.__init__(self, board, "bishop", x, y, color)
-
+    #---------------
     def set_all_moves(self) -> None:
         self.moves = []
         self.controled_cases = []
@@ -145,8 +154,8 @@ class Rook(Piece):
 
     def __init__(self, board:"Board", x=0, y=0, color= 0):
         Piece.__init__(self, board, "rook", x, y, color)
-        self.has_moved
-
+        self.has_moved = False
+    #---------------
     def set_all_moves(self) -> None:
         self.moves = []
         self.controled_cases = []
@@ -166,7 +175,7 @@ class Queen(Piece):
 
     def __init__(self, board:"Board", x=0, y=0, color= 0):
         Piece.__init__(self, board, "queen", x, y, color)
-
+    #---------------
     def set_all_moves(self) -> None:
         self.moves = []
         self.controled_cases = []
@@ -186,14 +195,15 @@ class King(Piece):
         Piece.__init__(self, board, "king", x, y, color)
         self.has_moved = False
         self.is_checked = 0 #number of pieces checking the king
-        self.pinned_pieces = [] #(piece, line)
-
+        self.pinned_pieces = [] #[(piece, line), ...]
+        self.attacking_piece = () #(piece, line)
+    #---------------
     def set_all_moves(self) -> None:
         self.moves = []
         self.controled_cases = []
         for m in Queen.move_options:
             self.can_move(self.pos + m)
-    
+    #---------------
     def get_line(self, dir:"Coord") -> list:
         line = []
         for i in range(8):
@@ -203,15 +213,17 @@ class King(Piece):
                 break
             line.append(Coord(x, y))
         return line
-
+    #---------------
     def detect_check_and_pins(self):
         self.is_checked = 0
         self.pinned_pieces = []
 
         for m in Knight.move_options:
-            x, y = self.pos + m
+            target = self.pos + m#TODO TODO TODO TODO TODO TODO TODO TODO fait un truc plus clean stp T------T
+            x, y = target.x, target.y
             if in_bound(x, y) and self.board[x][y] is Knight:
                 self.is_checked += 1
+                attacking = (self.board[x][y], [])
 
         for m in Bishop.move_options:
             line = self.get_line(Coord(m[0], m[1]))
@@ -225,6 +237,7 @@ class King(Piece):
                             pinned = p
                     if count == 0:
                         self.is_checked += 1
+                        attacking = (self.board[x][y], line)
                     elif count == 1:
                         self.pinned_pieces.append((pinned, line))
 
@@ -240,18 +253,31 @@ class King(Piece):
                             pinned = p
                     if count == 0:
                         self.is_checked += 1
+                        attacking = (self.board[x][y], line)
                     elif count == 1:
                         self.pinned_pieces.append((pinned, line))
         
         for i in range(-1, 2, 2):
-            x, y = self.pos.x + i, self.pos + (1 if self.color == 0 else -1)
+            x, y = self.pos.x + i, self.pos.y + (1 if self.color == 0 else -1)
             if self.board[x][y] and self.board[x][y] is Pawn:
                 self.is_checked += 1
-
-
-    #TODO override the method for the king
+                attacking = (self.board[x][y], line)
+        
+        if self.is_checked == 1:
+            self.attacking_piece = attacking
+    #---------------
     def remove_illegal_moves(self):
-        pass
+
+        opponents = self.board.team_list[1 - self.color]
+        controlled_cases = []
+        for p in opponents:
+            controlled_cases += p.moves
+
+        possible = []
+        for m in self.moves:
+            if not m in controlled_cases:
+                possible.append(m)
+        self.moves = possible
 
 #--------------------------------------------------
 
@@ -274,14 +300,33 @@ class Board:
                         self.case[x][y] = Pawn(self, x, y, 0 if y < 4 else 1)
                     else:
                         self.case[x][y] = Board.default_pieces[x](self, x, y, 0 if y < 4 else 1)
-                        if self.case[x][y] is King:
+                        if type(self.case[x][y]) == King:
                             self.kings.append(self.case[x][y])
 
                     if y < 4:
                         self.team_list[0].append(self.case[x][y])
                     else:
                         self.team_list[1].append(self.case[x][y])
-    
+        self.update_pieces()
+    #---------------
+    def update_pieces(self):
+        for t in self.team_list:
+            for p in t:
+                p.set_all_moves()
+        
+        for k in self.kings:
+            k.detect_check_and_pins()
+        
+        for t in self.team_list:
+            for p in t:
+                p.remove_illegal_moves()
+    #---------------
+    def play(self, piece:"Piece", coord:"Coord"):
+        if is_piece_turn(piece, self.turn):
+            piece.move(coord)
+            turn += 1
+            self.update_pieces()
+    #---------------
     def __repr__(self):
         for x in range(7, -1, -1):
             for y in range(8):
@@ -289,7 +334,7 @@ class Board:
             print("")
         print(self.team_list)
         return ""
-
+    #---------------
     def __getitem__(self, key):
         return self.case[key]
 
@@ -305,5 +350,12 @@ def is_piece_turn(piece, turn) -> bool:
 
 #==================================================
 
-# yes = Board()
-# print(yes)
+game = Board()
+print(game[1][0].moves)
+print(game[0][1].moves)
+print(game[3][0].moves)
+# print(game.team_list)
+# print(game.kings)
+
+# def test(a: int | str):
+#     return a

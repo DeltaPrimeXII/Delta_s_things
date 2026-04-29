@@ -16,7 +16,7 @@ def render_board(board:"Board"):
     color = ((0,0,0,0), (245, 245, 245, 255), (10, 10, 10, 255))
     e = 1
     i = 1
-    for x in range(len(board[0])):
+    for x in range(len(board)):
         for y in range(len(board[0])):
             pyglet.shapes.Rectangle(x=x*64, y=y*64, width=64, height=64, color=color[i]).draw()
             i = -i
@@ -35,3 +35,6 @@ def render_moves(board:"Board"):
     if board.selected_piece:
         for m in board.selected_piece.moves:
             pyglet.shapes.Rectangle(x=m.x*64 + 8, y=m.y*64 + 8, width=48, height=48, color=(100, 255, 100, 255)).draw()
+        for m in board.selected_piece.controled_cases:
+            pyglet.shapes.Rectangle(x=m.x*64 + 16, y=m.y*64 + 16, width=32, height=32, color=(255, 100, 100, 255)).draw()
+            

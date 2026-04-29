@@ -52,7 +52,7 @@ class Piece:
                     return True
                 elif self.board[x][y].color != self.color:
                     self.moves.append(coord)
-                    return True
+                    return False
             return False
     #---------------
     def move(self, coord:"Coord"):
@@ -353,6 +353,9 @@ class Board:
     #---------------
     def __getitem__(self, key):
         return self.case[key]
+    #---------------
+    def __len__(self):
+        return len(self.case)
 
 #==================================================
 

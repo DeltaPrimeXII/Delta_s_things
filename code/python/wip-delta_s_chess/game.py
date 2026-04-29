@@ -321,10 +321,26 @@ class Board:
             for p in t:
                 p.remove_illegal_moves()
     #---------------
+    #Called for each mouse click
+    def clicked(self, x, y):
+        piece = self.selected_piece
+        if in_bound(x, y):
+            if self[x][y] == piece:
+                self.selected_piece = None
+            elif piece and Coord(x, y) in piece.moves:
+                self.play(piece, Coord(x, y))
+                self.selected_piece = None
+            elif self[x][y] and is_piece_turn(self[x][y], self.turn):
+                self.selected_piece = self[x][y]
+            else:
+                self.selected_piece = None
+        else:
+            self.selected_piece = None
+    #---------------
     def play(self, piece:"Piece", coord:"Coord"):
         if is_piece_turn(piece, self.turn):
             piece.move(coord)
-            turn += 1
+            self.turn += 1
             self.update_pieces()
     #---------------
     def __repr__(self):
@@ -350,10 +366,10 @@ def is_piece_turn(piece, turn) -> bool:
 
 #==================================================
 
-game = Board()
-print(game[1][0].moves)
-print(game[0][1].moves)
-print(game[3][0].moves)
+# game = Board()
+# print(game[1][0].moves)
+# print(game[0][1].moves)
+# print(game[3][0].moves)
 # print(game.team_list)
 # print(game.kings)
 

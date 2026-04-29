@@ -2,10 +2,11 @@
 
 import pyglet
 import sys
-from pathlib import Path
-sys.path.append(str(Path(__file__).parent.parent))
-from _libraries import keyboard as kb
+# from pathlib import Path
+# sys.path.append(str(Path(__file__).parent.parent))
+# from _libraries import keyboard as kb
 from render import *
+from game import Board
 
 #==================================================
 
@@ -19,7 +20,7 @@ class Game_Window:
 
     def __init__(self):
         self.window = pyglet.window.Window(width=1280, height=720, caption="Delta's Chess", resizable=True)
-        pyglet.gl.glClearColor(0.1, 0.1, 0.1, 1)
+        pyglet.gl.glClearColor(0.2, 0.2, 0.3, 1)
         # self.sprite = pyglet.sprite.Sprite(img=pyglet.image.load('assets/drawings/space_8.png'), x=0, y=0)
         # self.sprite.scale = 10
 
@@ -32,17 +33,25 @@ class Game_Window:
         def on_draw():
             self.window.clear()
             # self.sprite.draw()
-            render_board(8)
+            render_game(game)
 
         @self.window.event
         def on_key_press(symbol, modifiers):
-            pass
+            if symbol == pyglet.window.key.SPACE:
+                pass
+
+        @self.window.event
+        def on_mouse_press(x, y, button, modifiers):
+            ax, ay = int(x/64), int(y/64)
+            game.clicked(ax, ay)
 
 
     def run(self):
         pyglet.app.run(1/60)
 
 #==================================================
+game = Board()
+print(game)
 
 game_window = Game_Window()
 game_window.run()

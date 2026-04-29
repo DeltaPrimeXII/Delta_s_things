@@ -1,27 +1,36 @@
 #Delta's Chess
 
 import pyglet
-from pieces import *
+# from pieces import *
+from game import *
 
 
+def render_game(game:"Board"):
+
+    render_board(game)
+    render_pieces(game)
+    render_moves(game)
 
 
+def render_board(board:"Board"):
+    color = ((0,0,0,0), (245, 245, 245, 255), (10, 10, 10, 255))
+    e = 1
+    i = 1
+    for x in range(len(board[0])):
+        for y in range(len(board[0])):
+            pyglet.shapes.Rectangle(x=x*64, y=y*64, width=64, height=64, color=color[i]).draw()
+            i = -i
+        e = -e
+        i = e
 
-def render_game():
-
-    render_board(8)
-    render_pieces()
-
-
-
-
-
-def render_board(n):
-    color = True
-    for y in range(n):
-        for x in range(n):
-            a = pyglet.shapes.Rectangle(x=x*64, y=y*64, width=64, height=64)
+def render_pieces(board:"Board"):
+    for t in board.team_list:
+        for p in t:
+            a = pyglet.sprite.Sprite(img=pyglet.image.load(f'code/python/wip-delta_s_chess/textures/{p.name}{"_b" if p.color == 1 else ""}.png'), x=p.pos.x*64, y=p.pos.y*64)
+            a.scale = 4
             a.draw()
-            color = not color
-def render_pieces():
-    pass
+
+def render_moves(board:"Board"):
+    if board.selected_piece:
+        for m in board.selected_piece.moves:
+            pyglet.shapes.Rectangle(x=m.x*64 + 8, y=m.y*64 + 8, width=48, height=48, color=(100, 255, 100, 255)).draw()

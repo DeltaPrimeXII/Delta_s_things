@@ -8,8 +8,8 @@ from game import *
 def render_game(game:"Board"):
 
     render_board(game)
+    render_moves(game)    
     render_pieces(game)
-    render_moves(game)
 
 
 def render_board(board:"Board"):
@@ -35,6 +35,6 @@ def render_moves(board:"Board"):
     if board.selected_piece:
         for m in board.selected_piece.moves:
             pyglet.shapes.Rectangle(x=m.x*64 + 8, y=m.y*64 + 8, width=48, height=48, color=(100, 255, 100, 255)).draw()
-        for m in board.selected_piece.controled_cases:
+        for m in board.selected_piece.controlled_squares:
             pyglet.shapes.Rectangle(x=m.x*64 + 16, y=m.y*64 + 16, width=32, height=32, color=(255, 100, 100, 255)).draw()
             

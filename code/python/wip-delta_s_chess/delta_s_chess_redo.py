@@ -19,7 +19,7 @@ pyglet.image.Texture.default_mag_filter = pyglet.gl.GL_NEAREST
 class Game_Window:
 
     def __init__(self):
-        self.window = pyglet.window.Window(width=1280, height=720, caption="Delta's Chess", resizable=True)
+        self.window = pyglet.window.Window(width=640, height=640, caption="Delta's Chess", resizable=True)
         pyglet.gl.glClearColor(0.2, 0.2, 0.3, 1)
         # self.sprite = pyglet.sprite.Sprite(img=pyglet.image.load('assets/drawings/space_8.png'), x=0, y=0)
         # self.sprite.scale = 10
@@ -51,7 +51,6 @@ class Game_Window:
 
 #==================================================
 game = Board()
-print(game)
 
 game_window = Game_Window()
 game_window.run()

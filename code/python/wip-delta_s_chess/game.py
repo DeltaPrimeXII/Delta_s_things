@@ -239,11 +239,8 @@ class King(Piece):
                     self.board[5][self.pos.y], self.board[7][self.pos.y] = self.board[7][self.pos.y], None
                     self.board[5][self.pos.y].pos = Coord(5, self.pos.y)
 
-
         elif self.board[x][y]:
             self.board.team_list[self.board[x][y].color].remove(self.board[x][y])
-
-
 
         self.board[x][y] = self
         self.board[self.pos.x][self.pos.y] = None

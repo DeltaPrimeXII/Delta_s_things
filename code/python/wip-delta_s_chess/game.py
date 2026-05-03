@@ -92,10 +92,28 @@ class Pawn(Piece):
         Piece.__init__(self, board, "pawn", x, y, color)
         self.has_moved = False
     #---------------
+    def move(self, coord:"Coord"):
+        x, y = coord.x, coord.y
+
+        if self.pos.x == x:
+            if self.pos.y + 2*way[self.color] == y:
+                self.board.en_passant = [coord - (0, (way[self.color]))]
+
+        else:
+            if self.board[x][y]:
+                self.board.team_list[self.board[x][y].color].remove(self.board[x][y])
+            else:
+                self.board.team_list[self.board[x][y-way[self.color]].color].remove(self.board[x][y-way[self.color]])
+
+        self.board[x][y] = self
+        self.board[self.pos.x][self.pos.y] = None
+        self.pos = coord
+        self.has_moved = True
+    #---------------
     def set_all_moves(self) -> None:
         self.moves = []
-        self.controled_cases = []
-        direction = (1 if self.color == 0 else -1)
+        self.controlled_squares = []
+        direction = (way[self.color])
         
         x, y = self.pos.x, self.pos.y + direction
         if in_bound(x, y) and self.board[x][y] is None:# 1 square
@@ -106,8 +124,8 @@ class Pawn(Piece):
         for i in range(-1, 2, 2):# diagonal attacks
             x, y = self.pos.x + i, self.pos.y + direction
             if in_bound(x, y):
-                self.controled_cases.append(Coord(x, y))
-                if self.board[x][y]:
+                self.controlled_squares.append(Coord(x, y))
+                if (self.board[x][y] and self.board[x][y].color != self.color) or Coord(x, y) in self.board.en_passant:
                     self.moves.append(Coord(x, y))
 
 #--------------------------------------------------
@@ -291,6 +309,7 @@ class Board:
         self.kings = []
         self.turn = 0
         self.selected_piece = None
+        self.en_passant = []
 
         for x in range(8):
             for y in range(8):
@@ -339,6 +358,7 @@ class Board:
     #---------------
     def play(self, piece:"Piece", coord:"Coord"):
         if is_piece_turn(piece, self.turn):
+            self.en_passant = []
             piece.move(coord)
             self.turn += 1
             self.update_pieces()

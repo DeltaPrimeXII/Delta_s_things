@@ -227,11 +227,55 @@ class King(Piece):
         self.pinned_pieces = [] #[(piece, line), ...]
         self.attacking_piece = () #(piece, line)
     #---------------
+    def move(self, coord:"Coord"):
+        x, y = coord.x, coord.y
+
+        if self.pos.y == y and abs(self.pos.x - x) >= 2:
+            match x:
+                case 2:
+                    self.board[3][self.pos.y], self.board[0][self.pos.y] = self.board[0][self.pos.y], None
+                    self.board[3][self.pos.y].pos = Coord(3, self.pos.y)
+                case 6:
+                    self.board[5][self.pos.y], self.board[7][self.pos.y] = self.board[7][self.pos.y], None
+                    self.board[5][self.pos.y].pos = Coord(5, self.pos.y)
+
+
+        elif self.board[x][y]:
+            self.board.team_list[self.board[x][y].color].remove(self.board[x][y])
+
+
+
+        self.board[x][y] = self
+        self.board[self.pos.x][self.pos.y] = None
+        self.pos = coord
+        self.has_moved = True
+    #---------------
     def set_all_moves(self) -> None:
         self.moves = []
-        self.controled_cases = []
+        self.controlled_squares = []
         for m in Queen.move_options:
             self.can_move(self.pos + m)
+        
+        #Castle
+        if not self.has_moved:
+            for i in range(-1, 2, 2):
+                line = self.get_line(Coord(i, 0))
+                piece = self.board[line[-1].x][line[-1].y]
+                if type(piece) is Rook and (piece.color == self.color) and (not piece.has_moved):
+                    if [self.board[c.x][c.y] for c in line[0:-1]] == [None]*(len(line)-1):
+
+                        opponents = self.board.team_list[1 - self.color]
+                        controlled_squares = []
+                        for p in opponents:
+                            controlled_squares += p.controlled_squares
+
+                        castle = True
+                        for e in range(0, 3):#including king itself
+                            if Coord(self.pos.x + i*e, self.pos.y) in controlled_squares:
+                                castle = False
+                        
+                        if castle:
+                            self.moves.append(Coord(self.pos.x + i*2, self.pos.y))
     #---------------
     def get_line(self, dir:"Coord") -> list:#TODO repair get_line() + its usage in detect_c_a_p()
         line = []
@@ -348,9 +392,11 @@ class Board:
     def update_pieces(self):
         for t in self.team_list:
             for p in t:
-                p.set_all_moves()
+                if not type(p) is King:
+                    p.set_all_moves()
         
         for k in self.kings:
+            k.set_all_moves()
             k.detect_check_and_pins()
         
         for t in self.team_list:

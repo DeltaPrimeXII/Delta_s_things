@@ -48,15 +48,15 @@ class Piece:
         self.pos = Coord(x, y)
         self.color = color
         self.moves = []
-        self.controled_cases = []
-    #---------------    
+        self.controlled_squares = []
+    #---------------
     def __repr__(self):
         return f"{'w' if self.color == 0 else 'b'}_{self.name}"
-    #---------------   
+    #---------------
     def can_move(self, coord) -> bool:
             x, y = coord.x, coord.y
             if in_bound(x, y):# (in_bound)
-                self.controled_cases.append(coord)
+                self.controlled_squares.append(coord)
                 if self.board[x][y] is None:# (empty_case)
                     self.moves.append(coord)
                     return True
@@ -150,7 +150,7 @@ class Knight(Piece):
     #---------------
     def set_all_moves(self) -> None:
         self.moves = []
-        self.controled_cases = []
+        self.controlled_squares = []
         for m in Knight.move_options:
             self.can_move(self.pos + m)
 
@@ -165,7 +165,7 @@ class Bishop(Piece):
     #---------------
     def set_all_moves(self) -> None:
         self.moves = []
-        self.controled_cases = []
+        self.controlled_squares = []
         for m in Bishop.move_options:
             i = 1
             while i < 8:
@@ -186,7 +186,7 @@ class Rook(Piece):
     #---------------
     def set_all_moves(self) -> None:
         self.moves = []
-        self.controled_cases = []
+        self.controlled_squares = []
         for m in Rook.move_options:
             i = 1
             while i < 8:
@@ -206,7 +206,7 @@ class Queen(Piece):
     #---------------
     def set_all_moves(self) -> None:
         self.moves = []
-        self.controled_cases = []
+        self.controlled_squares = []
         for m in Queen.move_options:
             i = 1
             while i < 8:
@@ -451,13 +451,3 @@ def is_piece_turn(piece, turn) -> bool:
     return piece.color == turn%2
 
 #==================================================
-
-# game = Board()
-# print(game[1][0].moves)
-# print(game[0][1].moves)
-# print(game[3][0].moves)
-# print(game.team_list)
-# print(game.kings)
-
-# def test(a: int | str):
-#     return a

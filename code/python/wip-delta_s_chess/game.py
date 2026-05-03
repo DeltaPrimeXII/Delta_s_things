@@ -2,6 +2,13 @@
 
 # import pyglet
 
+#==================================================
+way = {
+    0: 1,
+    1: -1,
+    }
+#==================================================
+
 class Coord:
     
     def __init__(self, x=0, y=0):
@@ -14,8 +21,11 @@ class Coord:
     def __eq__(self, other) -> bool:
         return self.x == other.x and self.y == other.y
     #---------------
-    def __add__(self, adder:tuple) -> "Coord":
-        return Coord(self.x + adder[0], self.y + adder[1])
+    def __add__(self, adder) -> "Coord":
+        if type(adder) == tuple:
+            return Coord(self.x + adder[0], self.y + adder[1])
+        else:
+            return Coord(self.x + adder.x, self.y + adder.y)
     #---------------    
     def __sub__(self, subber:tuple) -> "Coord":
         return Coord(self.x - subber[0], self.y - subber[1])
@@ -213,6 +223,7 @@ class King(Piece):
         Piece.__init__(self, board, "king", x, y, color)
         self.has_moved = False
         self.is_checked = 0 #number of pieces checking the king
+        self.impossible_moves = []
         self.pinned_pieces = [] #[(piece, line), ...]
         self.attacking_piece = () #(piece, line)
     #---------------
@@ -222,24 +233,25 @@ class King(Piece):
         for m in Queen.move_options:
             self.can_move(self.pos + m)
     #---------------
-    def get_line(self, dir:"Coord") -> list:
+    def get_line(self, dir:"Coord") -> list:#TODO repair get_line() + its usage in detect_c_a_p()
         line = []
-        for i in range(8):
-            x, y = dir.x*i, dir.y*i
-            if in_bound(x, y) and self.board[x][y] and self.board[x][y].color != self.color:
+        for i in range(1, 8):
+            x, y = self.pos.x + dir.x*i, self.pos.y + dir.y*i
+            if in_bound(x, y):
+                if self.board[x][y] and self.board[x][y].color != self.color:
+                    line.append(Coord(x, y))
+                    break
                 line.append(Coord(x, y))
-                break
-            line.append(Coord(x, y))
         return line
     #---------------
     def detect_check_and_pins(self):
         self.is_checked = 0
         self.pinned_pieces = []
+        self.impossible_moves = []
 
         for m in Knight.move_options:
-            target = self.pos + m#TODO TODO TODO TODO TODO TODO TODO TODO fait un truc plus clean stp T------T
-            x, y = target.x, target.y
-            if in_bound(x, y) and self.board[x][y] is Knight:
+            x, y = self.pos.x + m[0], self.pos.y + m[1]
+            if in_bound(x, y) and self.board[x][y] and self.board[x][y].color != self.color and type(self.board[x][y]) is Knight:
                 self.is_checked += 1
                 attacking = (self.board[x][y], [])
 
@@ -247,15 +259,16 @@ class King(Piece):
             line = self.get_line(Coord(m[0], m[1]))
             if line:
                 last = self.board[line[-1].x][line[-1].y]
-                if last is Bishop or last is Queen:
+                if last and last.color != self.color and (type(last) is Bishop or type(last) is Queen):
                     count = 0
-                    for p in line:
-                        if p and p.color == self.color:
+                    for pos in line:
+                        if self.board[pos.x][pos.y] and self.board[pos.x][pos.y].color == self.color:
                             count += 1
-                            pinned = p
+                            pinned = self.board[pos.x][pos.y]
                     if count == 0:
                         self.is_checked += 1
-                        attacking = (self.board[x][y], line)
+                        attacking = (last, line)
+                        self.impossible_moves.append(self.pos + Coord(m[0], m[1])*-1)
                     elif count == 1:
                         self.pinned_pieces.append((pinned, line))
 
@@ -263,37 +276,41 @@ class King(Piece):
             line = self.get_line(Coord(m[0], m[1]))
             if line:
                 last = self.board[line[-1].x][line[-1].y]
-                if last is Rook or last is Queen:
+                if last and last.color != self.color and (type(last) is Rook or type(last) is Queen):
                     count = 0
-                    for p in line:
-                        if p and p.color == self.color:
+                    for pos in line:
+                        if self.board[pos.x][pos.y] and self.board[pos.x][pos.y].color == self.color:
                             count += 1
-                            pinned = p
+                            pinned = self.board[pos.x][pos.y]
                     if count == 0:
                         self.is_checked += 1
-                        attacking = (self.board[x][y], line)
+                        attacking = (last, line)
+                        self.impossible_moves.append(self.pos + Coord(m[0], m[1])*-1)
                     elif count == 1:
                         self.pinned_pieces.append((pinned, line))
         
         for i in range(-1, 2, 2):
-            x, y = self.pos.x + i, self.pos.y + (1 if self.color == 0 else -1)
-            if self.board[x][y] and self.board[x][y] is Pawn:
-                self.is_checked += 1
-                attacking = (self.board[x][y], line)
+            x, y = self.pos.x + i, self.pos.y + (way[self.color])
+            if in_bound(x, y) and self.board[x][y]:
+                if self.board[x][y].color != self.color and type(self.board[x][y]) == Pawn:
+                    self.is_checked += 1
+                    attacking = (self.board[x][y], [])
         
         if self.is_checked == 1:
             self.attacking_piece = attacking
+
     #---------------
     def remove_illegal_moves(self):
 
         opponents = self.board.team_list[1 - self.color]
-        controlled_cases = []
+        controlled_squares = []
+
         for p in opponents:
-            controlled_cases += p.moves
+            controlled_squares += p.controlled_squares
 
         possible = []
         for m in self.moves:
-            if not m in controlled_cases:
+            if not m in controlled_squares and not m in self.impossible_moves:
                 possible.append(m)
         self.moves = possible
 

@@ -16,13 +16,12 @@ pyglet.image.Texture.default_mag_filter = pyglet.gl.GL_NEAREST
 
 #==================================================
 
-class Game_Window:
+class Window:
 
     def __init__(self):
         self.window = pyglet.window.Window(width=640, height=640, caption="Delta's Chess", resizable=True)
-        pyglet.gl.glClearColor(0.2, 0.2, 0.3, 1)
-        # self.sprite = pyglet.sprite.Sprite(img=pyglet.image.load('assets/drawings/space_8.png'), x=0, y=0)
-        # self.sprite.scale = 10
+        pyglet.gl.glClearColor(0.1, 0.1, 0.2, 1)
+
 
         @self.window.event
         def on_resize(width, height):
@@ -32,8 +31,7 @@ class Game_Window:
         @self.window.event
         def on_draw():
             self.window.clear()
-            # self.sprite.draw()
-            render_game(game)
+            game.render(player)
 
         @self.window.event
         def on_key_press(symbol, modifiers):
@@ -42,8 +40,7 @@ class Game_Window:
 
         @self.window.event
         def on_mouse_press(x, y, button, modifiers):
-            ax, ay = int(x/64), int(y/64)
-            game.clicked(ax, ay)
+            game.clicked(x, y, player)
 
 
     def run(self):
@@ -51,6 +48,7 @@ class Game_Window:
 
 #==================================================
 game = Board()
+player = 1
 
-game_window = Game_Window()
-game_window.run()
+window = Window()
+window.run()

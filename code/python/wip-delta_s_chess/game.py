@@ -1,6 +1,9 @@
 #Delta's Chess
 
-# import pyglet
+import pyglet
+
+import os 
+dir_path = os.path.dirname(os.path.realpath(__file__))
 
 #==================================================
 way = {
@@ -216,7 +219,8 @@ class Queen(Piece):
                 i += 1
 
 #--------------------------------------------------
-
+# TODO fix pinned piece (exemple avec le fou)
+# TODO fix knight check (can't eat the knight)
 class King(Piece):
 
     def __init__(self, board:"Board", x=0, y=0, color= 0):
@@ -361,7 +365,9 @@ class Board:
 
     default_pieces = [Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook]
 
-    def __init__(self):
+    def __init__(self, player=0):
+        self.player = player
+        self.turn_played = False #For multiplayer purpose
         self.case = [[None]*8 for _ in range(8)]
         self.team_list = [[], []]
         self.kings = []
@@ -402,26 +408,32 @@ class Board:
     #---------------
     #Called for each mouse click
     def clicked(self, x, y):
+        side = 0
+        if self.player == 1:
+            side = 7
+        ax, ay = abs(side - int(x/64)), abs(side - int(y/64))
         piece = self.selected_piece
-        if in_bound(x, y):
-            if self[x][y] == piece:
+        if in_bound(ax, ay):
+            if self[ax][ay] == piece:
                 self.selected_piece = None
-            elif piece and Coord(x, y) in piece.moves:
-                self.play(piece, Coord(x, y))
+            elif piece and Coord(ax, ay) in piece.moves:
+                self.play(piece, Coord(ax, ay))
                 self.selected_piece = None
-            elif self[x][y] and is_piece_turn(self[x][y], self.turn):
-                self.selected_piece = self[x][y]
+            elif self[ax][ay] and is_piece_turn(self[ax][ay], self.turn):
+                self.selected_piece = self[ax][ay]
             else:
                 self.selected_piece = None
         else:
             self.selected_piece = None
     #---------------
     def play(self, piece:"Piece", coord:"Coord"):
-        if is_piece_turn(piece, self.turn):
+        # if is_piece_turn(piece, self.turn):
+        if piece.color == self.player:
             self.en_passant = []
             piece.move(coord)
             self.turn += 1
             self.update_pieces()
+            self.turn_played = True
     #---------------
     def __repr__(self):
         for x in range(7, -1, -1):
@@ -436,8 +448,48 @@ class Board:
     #---------------
     def __len__(self):
         return len(self.case)
+    #---------------
+    def render(self):
+        render_board(self)
+        render_moves(self, self.player)    
+        render_pieces(self, self.player)
 
 #==================================================
+
+def render_board(board:"Board"):
+    color = ((0,0,0,0), (245, 245, 245, 255), (10, 10, 10, 255))
+    e = 1
+    i = 1
+    for x in range(len(board)):
+        for y in range(len(board[0])):
+            pyglet.shapes.Rectangle(x=x*64, y=y*64, width=64, height=64, color=color[i]).draw()
+            i = -i
+        e = -e
+        i = e
+    pyglet.shapes.Rectangle(x=8*64 + 8, y=0, width=16, height=64*8, color=color[1 if board.turn%2 == 0 else -1]).draw()
+#---------------
+def render_pieces(board:"Board", player):
+    side = 0
+    if player == 1:
+        side = 7
+    for t in board.team_list:
+        for p in t:
+            a = pyglet.sprite.Sprite(img=pyglet.image.load(f'{dir_path}/textures/{p.name}{"_b" if p.color == 1 else ""}.png'),
+                                     x=abs(side - p.pos.x)*64, y=abs(side - p.pos.y)*64)
+            a.scale = 4
+            a.draw()
+#---------------
+def render_moves(board:"Board", player):
+    if board.selected_piece:
+        side = 0
+        if player == 1:
+            side = 7
+        for m in board.selected_piece.moves:
+            pyglet.shapes.Rectangle(x=abs(side - m.x)*64 + 8, y=abs(side - m.y)*64 + 8, width=48, height=48, color=(100, 255, 100, 255)).draw()
+        for m in board.selected_piece.controlled_squares:
+            pyglet.shapes.Rectangle(x=abs(side - m.x)*64 + 16, y=abs(side - m.y)*64 + 16, width=32, height=32, color=(255, 100, 100, 255)).draw()
+
+#--------------------------------------------------
 
 def in_bound(x, y) -> bool:
     return 0 <= x < 8 and 0 <= y < 8

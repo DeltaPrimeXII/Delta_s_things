@@ -35,7 +35,8 @@ class State(Enum):
 #----------
 dico_ui = {
     State.HOME: [Button("join", 0, 0, 200, 100),
-                 Button("host", 0, 200, 200, 100),],
+                 Button("host", 0, 200, 200, 100),
+                 Button("test", 0, 400, 200, 100),],
 
     State.HOST: [Button("home", 0, 0, 200, 100),
                  Button("chess", 0, 200, 200, 100),],
@@ -47,11 +48,13 @@ dico_ui = {
     }
 #----------
 class App:
-    def __init__(self):
+    def __init__(self, w, h):
         self.state = State.HOME
         self.ui = dico_ui[self.state]
         self.game = None
         self.data = None
+        self.width = w
+        self.height = h
 
     def main(self):
         for ui in self.ui:
@@ -94,6 +97,10 @@ class App:
     def change_state(self, state):
         self.state = state
         self.ui = dico_ui[self.state]
+    
+    def update_size(self, w, h):
+        self.width = w
+        self.height = h
 
 
 

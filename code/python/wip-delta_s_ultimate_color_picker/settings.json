@@ -1,0 +1,19 @@
+{
+    "default_width": 800,
+    "default_height": 500,
+    "default_mode": "rgb",
+
+    "color": {
+        "background": "191A1B",
+        "button": "202021",
+        "button_hover": "292A2B",
+        "outline": "424242",
+        "outline_hover": "585858",
+        "outline_focus": "FFFFFF",
+        "text": "EEEEEE",
+        "text_hover": "FFFFFF"
+    },
+
+    "outline_thickness": 3,
+    "text_size": 16
+}

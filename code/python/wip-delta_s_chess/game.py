@@ -227,6 +227,7 @@ class King(Piece):
         Piece.__init__(self, board, "king", x, y, color)
         self.has_moved = False
         self.is_checked = 0 #number of pieces checking the king
+        self.is_checkmated = False
         self.impossible_moves = []
         self.pinned_pieces = [] #[(piece, line), ...]
         self.attacking_piece = () #(piece, line)
@@ -374,6 +375,7 @@ class Board:
         self.turn = 0
         self.selected_piece = None
         self.en_passant = []
+        self.last_move = []
 
         for x in range(8):
             for y in range(8):
@@ -405,6 +407,14 @@ class Board:
         for t in self.team_list:
             for p in t:
                 p.remove_illegal_moves()
+
+        mate = True
+        for i in range(len(self.team_list)):
+            for p in self.team_list[i]:
+                if len(p.moves) > 0:
+                    mate = False
+            if mate:
+                self.kings[i].is_checked = True
     #---------------
     #Called for each mouse click
     def clicked(self, x, y):
@@ -417,23 +427,24 @@ class Board:
             if self[ax][ay] == piece:
                 self.selected_piece = None
             elif piece and Coord(ax, ay) in piece.moves:
-                self.play(piece, Coord(ax, ay))
+                self.play(self.player, piece, Coord(ax, ay))
                 self.selected_piece = None
-            elif self[ax][ay] and is_piece_turn(self[ax][ay], self.turn):
+            elif is_piece_turn(self[ax][ay], self.turn):
                 self.selected_piece = self[ax][ay]
             else:
                 self.selected_piece = None
         else:
             self.selected_piece = None
     #---------------
-    def play(self, piece:"Piece", coord:"Coord"):
-        # if is_piece_turn(piece, self.turn):
-        if piece.color == self.player:
+    def play(self, player, piece:"Piece", coord:"Coord"):
+        if is_piece_turn(piece, self.turn) and piece.color == player:
             self.en_passant = []
+            self.last_move = [piece.pos, coord]
             piece.move(coord)
             self.turn += 1
             self.update_pieces()
-            self.turn_played = True
+            if player == self.player:
+                self.turn_played = True
     #---------------
     def __repr__(self):
         for x in range(7, -1, -1):
@@ -468,13 +479,20 @@ def render_board(board:"Board"):
         i = e
     pyglet.shapes.Rectangle(x=8*64 + 8, y=0, width=16, height=64*8, color=color[1 if board.turn%2 == 0 else -1]).draw()
 #---------------
+
+img_dict = {}
+for color in range(2):
+    for name in ["pawn", "knight", "bishop", "rook", "queen", "king"]:
+        img_dict[(name, color)] = pyglet.image.load(f'{dir_path}/textures/{name}{"_b" if color == 1 else ""}.png')
+
+
 def render_pieces(board:"Board", player):
     side = 0
     if player == 1:
         side = 7
     for t in board.team_list:
         for p in t:
-            a = pyglet.sprite.Sprite(img=pyglet.image.load(f'{dir_path}/textures/{p.name}{"_b" if p.color == 1 else ""}.png'),
+            a = pyglet.sprite.Sprite(img=img_dict[(p.name, p.color)],
                                      x=abs(side - p.pos.x)*64, y=abs(side - p.pos.y)*64)
             a.scale = 4
             a.draw()
@@ -497,6 +515,8 @@ def in_bound(x, y) -> bool:
 #--------------------------------------------------
 
 def is_piece_turn(piece, turn) -> bool:
+    if piece is None:
+        return False
     return piece.color == turn%2
 
 #==================================================

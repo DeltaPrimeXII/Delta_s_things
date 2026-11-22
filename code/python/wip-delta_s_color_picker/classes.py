@@ -3,6 +3,8 @@ from enum import Enum
 import color_functions as col
 from settings import settings
 
+#TODO: replace all the x, y parameters with self.mouse
+
 #-------------------------
 
 black = (0, 0, 0)
@@ -34,10 +36,31 @@ col_func_reverse = {
 
 #===================================================
 
+class Mouse:
+    __slots__ = ("_x", "_y") # Make sure no other attributes can be added
+    def __init__(self, x=0, y=0):
+        self._x = x
+        self._y = y
+
+    @property
+    def x(self):
+        return self._x
+    @property
+    def y(self):
+        return self._y
+
+    def update(self, x:int, y:int) -> None:
+        self._x = x
+        self._y = y
+
+#===================================================
+
 class Tab:
-    def __init__(self, app, name):
+    def __init__(self, app, name, scrollable=False):
         self.app = app
         self.name = name
+        self.scrollable = scrollable
+        self.mouse:Mouse = app.mouse
         self.ui = {}
         self.batch = pyglet.graphics.Batch()
         # For drawing order
@@ -47,6 +70,7 @@ class Tab:
                        pyglet.graphics.Group(3),]
         self.dragged_color:DisplayColor = None
         self.focused_text_box:TextBox = None
+        self.offset = 0
 
     def __repr__(self) -> str:
         return f"Tab[{self.name}]"
@@ -54,13 +78,21 @@ class Tab:
     def __iter__(self):
         for ui in self.ui.values():
             yield ui
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        return False
     #-------------------------
-    def element_at(self, x, y, element_type):
-        for el in get_all_instance_of(element_type, self):
+    def element_at(self, x, y, element_type=None):
+        for el in get_all_instance_of(self, element_type):
             if el.is_hovered(x, y):
                 return el
         return None
 
+    def tab_scroll(self, scroll):#TODO: check if it is possible to offset everything on screen
+        self.offset = clamp(0, self.offset + scroll, 999)
     #-------------------------
     def on_resize(self, width, height) -> None:
         for ui in self.ui.values():
@@ -69,8 +101,9 @@ class Tab:
     def on_key_press(self, symbol, modifiers) -> None:
         if self.focused_text_box:
             if symbol in [pyglet.window.key.ESCAPE, pyglet.window.key.ENTER]:
+                self.focused_text_box.unfocus()
                 self.focused_text_box = None
-            
+
     def on_key_release(self, symbol, modifiers) -> None:
         pass
     #-------------------------
@@ -84,10 +117,8 @@ class Tab:
                 self.focused_text_box.backspace()
     #-------------------------
     def on_click(self, x:int, y:int) -> None:
-        self.dragged_color = self.element_at(x, y, DisplayColor)
-        self.focused_text_box = self.element_at(x, y, TextBox)
-        #----------
-        for ui in self.ui.values():
+        self.click_behavior(x, y)
+        for ui in self:#----------
             ui.on_click(x, y)
 
     def on_release(self, x:int, y:int) -> None:
@@ -101,22 +132,34 @@ class Tab:
                     # print("color_copied")
                     target.color = self.dragged_color.color
             self.dragged_color = None
-        #----------
-        for ui in self.ui.values():
+        for ui in self:#----------
             ui.on_release(x, y)
 
     def on_motion(self, x:int, y:int) -> None:
-        for ui in self.ui.values():
+        for ui in self:
             ui.on_motion(x, y)
 
     def on_drag(self, x:int, y:int) -> None:
-        for ui in self.ui.values():
+        for ui in self:
             ui.on_drag(x, y)
 
     def on_scroll(self, x:int, y:int, scroll) -> None:
-        for ui in self.ui.values():
+        for ui in self:
             ui.on_scroll(x, y, scroll)
+        if self.scrollable and not self.element_at(x, y):
+            self.tab_scroll(scroll)
     #-------------------------
+    def click_behavior(self, x:int, y:int) -> None:
+        new_color:DisplayColor = self.element_at(x, y, DisplayColor)
+        if self.dragged_color != new_color:
+            self.dragged_color = new_color
+        new_text_box:TextBox = self.element_at(x, y, TextBox)
+        if self.focused_text_box != new_text_box:
+            if self.focused_text_box:
+                self.focused_text_box.unfocus()#TODO: find why it takes so much time to update
+            if new_text_box:
+                new_text_box.focus()
+            self.focused_text_box = new_text_box
 
 #===================================================
 
@@ -125,6 +168,7 @@ class SuperElement:
         self.parent = parent
         self.batch = parent.batch
         self.groups = parent.groups
+        self.mouse:Mouse = parent.mouse
         self._x = x
         self._y = y
         self.ui = {}
@@ -268,6 +312,7 @@ class Element:
         self.parent = parent
         self.batch = parent.batch
         self.groups = parent.groups
+        self.mouse:Mouse = parent.mouse
         self._x = x
         self._y = y
         self.w = w
@@ -311,9 +356,11 @@ class Element:
 
     def on_click(self, x:int, y:int) -> None:
         if self.is_hovered(x, y):
+            self.animate(x, y)
             self.clicked = True
 
     def on_release(self, x:int, y:int) -> None:
+        self.animate(x, y)
         self.clicked = False
 
     def on_motion(self, x:int, y:int) -> None:
@@ -366,9 +413,11 @@ class Button(Element):
 #--------------------------------------------------
 
 class TextBox(Element):
-    def __init__(self, parent, x=0, y=0, w=0, h=0):
+    def __init__(self, parent, x=0, y=0, w=0, h=0, numeric_only=True):
         super().__init__(parent, x, y, w, h)
         self._text = ""
+        self.numeric_only = numeric_only
+        self.focused = False
 
         self.drawables = {
             "outline": pyglet.shapes.Rectangle((self.x - t), (self.y - t), (self.w + 2*t), (self.h + 2*t), settings["color"]["outline"], batch=self.batch, group=self.groups[0]),
@@ -386,6 +435,14 @@ class TextBox(Element):
         self["text"].text = value
     #----------------------
 
+    def animate(self, x:int, y:int) -> None:
+        if self.focused:
+            self["outline"].color = settings["color"]["outline_focus"]
+        elif self.is_hovered(x, y):
+            self["outline"].color = settings["color"]["outline_hover"]
+        else:
+            self["outline"].color = settings["color"]["outline"]
+
     def update_coords(self) -> None:
         self.drawables["outline"].x = self.x - t
         self.drawables["outline"].y = self.y - t
@@ -394,14 +451,56 @@ class TextBox(Element):
         self.drawables["text"].x = self.x + self.w/2
         self.drawables["text"].y = self.y + self.h/2
 
-    def add(self, text:str):
-        if text.isascii():
+    def add(self, text:str) -> None:
+        if self.numeric_only and text in "0123456789.+-*/%()":
+            self.text += text
+        elif not self.numeric_only and text.isascii():
             self.text += text
 
     def backspace(self) -> None:
         var = self.text
         self.text = var[0:len(var)-1]
 
+    def focus(self) -> None:
+        self.focused = True
+        self.animate(self.mouse.x, self.mouse.y)
+
+    def unfocus(self) -> None:
+        if valid_operation(self.text):
+            try:
+                self.text = str(eval(self.text))
+            except ZeroDivisionError:
+                pass
+        self.focused = False
+        self.animate(self.mouse.x, self.mouse.y)
+
+#--------------------------------------------------
+
+class OptionBox(Element):
+    def __init__(self, parent, x=0, y=0, w=0, h=0, options=None):
+        super().__init__(parent, x, y, w, h)
+        self.options = options
+        self.current = 0
+
+        self.drawables = {
+            "outline": pyglet.shapes.Rectangle((self.x - t), (self.y - t), (self.w + 2*t), (self.h + 2*t), settings["color"]["outline"], batch=self.batch, group=self.groups[0]),
+            "button": pyglet.shapes.Rectangle(self.x, self.y, self.w, self.h, settings["color"]["button"], batch=self.batch, group=self.groups[1]),
+            "text": pyglet.text.Label(self.options[self.current], (self.x + self.w/2), (self.y + self.h/2), anchor_x="center", anchor_y="center", font_size=settings["text_size"], color=settings["color"]["text"], batch=self.batch, group=self.groups[2]),
+        }
+
+    def update_coords(self) -> None:
+        self.drawables["outline"].x = self.x - t
+        self.drawables["outline"].y = self.y - t
+        self.drawables["button"].x = self.x
+        self.drawables["button"].y = self.y
+        self.drawables["text"].x = self.x + self.w/2
+        self.drawables["text"].y = self.y + self.h/2
+
+    def on_click(self, x, y):
+        if self.is_hovered(x, y):
+            self.current = (self.current + 1) % len(self.options)
+            self["text"].text = self.options[self.current]
+            self.clicked = True
 #--------------------------------------------------
 
 class Toggle(Element):
@@ -507,11 +606,13 @@ class ColorSlider(Element):
 
 #===================================================
 
-def get_all_instance_of(instance_type, container):
+def get_all_instance_of(container, instance_type=None):
     """Made for the Tab class"""
     for child in container:
         if isinstance(child, SuperElement):
-            yield from get_all_instance_of(instance_type, child)
+            yield from get_all_instance_of(child, instance_type)
+        elif not instance_type:
+            yield child
         elif isinstance(child, instance_type):
             yield child
 
@@ -524,3 +625,48 @@ def swap_colors(display_color_1:"DisplayColor", display_color_2:"DisplayColor") 
 
 def clamp(mini, value, maxi):
     return max(mini, min(value, maxi))
+
+#--------------------------------------------------
+
+def valid_operation(string:str) -> bool:
+    """Check if the string is a valid expression. Allowed characters: [0123456789.+-*/%()]"""
+    string = string.replace(" ", "")
+    if string == "":
+        return False
+    n = len(string)
+    p_count = 0
+    dot_count = 0
+    for i, c in enumerate(string):
+        if c == "(":
+            p_count += 1
+        elif c == ")":
+            p_count -= 1
+        elif c == ".":
+            dot_count += 1
+        elif c not in "0123456789":
+            dot_count = 0
+
+        if p_count < 0:
+            return False # Number of parenthesis mismatch
+        elif dot_count > 1:
+            return False # More than 2 dots in a single number
+        elif c == "(" and (i == n-1 or string[i+1] in "+-%*/)"):
+            return False # Invalid character after a parenthesis
+        elif c in "+-%" and (i == 0 or i == n-1 or string[i+1] in "+-%*/)"):
+            return False # +, - or % in invalid places
+        elif c in "*/" and (i == 0 or i == n-1 or string[i+1] in "+-%)" or string[i-1] + string[i+1] == c + c):
+            return False # * or / in invalid places (except **  and //)
+
+    return (p_count == 0)
+
+#--------------------------------------------------
+
+# txt = "2. + (.2 + .5) / 0"
+# if valid_operation(txt):
+#     try:
+#         print(eval(txt))
+#     except ZeroDivisionError:
+#         print("can't divide by zero")
+# else:
+#     print("Invalid operation")
+

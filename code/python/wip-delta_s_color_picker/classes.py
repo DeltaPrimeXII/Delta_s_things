@@ -3,8 +3,6 @@ from enum import Enum
 import color_functions as col
 from settings import settings
 
-#TODO: replace all the x, y parameters with self.mouse
-
 #-------------------------
 
 black = (0, 0, 0)
@@ -37,10 +35,14 @@ col_func_reverse = {
 #===================================================
 
 class Mouse:
-    __slots__ = ("_x", "_y") # Make sure no other attributes can be added
-    def __init__(self, x=0, y=0):
+    __slots__ = ("_x", "_y", "_dx", "_dy", "_scroll_x", "_scroll_y") # Make sure no other attributes can be added
+    def __init__(self, x=0, y=0, dx=0, dy=0, scroll_x=0, scroll_y=0):
         self._x = x
         self._y = y
+        self._dx = dx
+        self._dy = dy
+        self._scroll_x = scroll_x
+        self._scroll_y = scroll_y
 
     @property
     def x(self):
@@ -48,10 +50,26 @@ class Mouse:
     @property
     def y(self):
         return self._y
+    @property
+    def dx(self):
+        return self._dx
+    @property
+    def dy(self):
+        return self._dy
+    @property
+    def scroll_x(self):
+        return self._scroll_x
+    @property
+    def scroll_y(self):
+        return self._scroll_y
 
-    def update(self, x:int, y:int) -> None:
+    def update(self, x, y, dx=0, dy=0, scroll_x=0, scroll_y=0) -> None:
         self._x = x
         self._y = y
+        self._dx = dx
+        self._dy = dy
+        self._scroll_x = scroll_x
+        self._scroll_y = scroll_y
 
 #===================================================
 
@@ -87,12 +105,12 @@ class Tab:
     #-------------------------
     def element_at(self, x, y, element_type=None):
         for el in get_all_instance_of(self, element_type):
-            if el.is_hovered(x, y):
+            if el.is_hovered():
                 return el
         return None
 
-    def tab_scroll(self, scroll):#TODO: check if it is possible to offset everything on screen
-        self.offset = clamp(0, self.offset + scroll, 999)
+    def tab_scroll(self, multiplier):#TODO: check if it is possible to offset everything on screen
+        self.offset = clamp(0, (self.offset + self.mouse.scroll*multiplier), 999)
     #-------------------------
     def on_resize(self, width, height) -> None:
         for ui in self.ui.values():
@@ -116,12 +134,13 @@ class Tab:
             if motion == pyglet.window.key.MOTION_BACKSPACE:
                 self.focused_text_box.backspace()
     #-------------------------
-    def on_click(self, x:int, y:int) -> None:
-        self.click_behavior(x, y)
+    def on_click(self) -> None:
+        self.click_behavior()
         for ui in self:#----------
-            ui.on_click(x, y)
+            ui.on_click()
 
-    def on_release(self, x:int, y:int) -> None:
+    def on_release(self) -> None:
+        x, y = self.mouse.x, self.mouse.y
         if self.dragged_color:
             target = self.element_at(x, y, DisplayColor)
             if (target) and (target != self.dragged_color) and (target.droppable):
@@ -133,30 +152,32 @@ class Tab:
                     target.color = self.dragged_color.color
             self.dragged_color = None
         for ui in self:#----------
-            ui.on_release(x, y)
+            ui.on_release()
 
-    def on_motion(self, x:int, y:int) -> None:
+    def on_motion(self) -> None:
         for ui in self:
-            ui.on_motion(x, y)
+            ui.on_motion()
 
-    def on_drag(self, x:int, y:int) -> None:
+    def on_drag(self) -> None:
         for ui in self:
-            ui.on_drag(x, y)
+            ui.on_drag()
 
-    def on_scroll(self, x:int, y:int, scroll) -> None:
+    def on_scroll(self, multiplier) -> None:
+        x, y = self.mouse.x, self.mouse.y
         for ui in self:
-            ui.on_scroll(x, y, scroll)
+            ui.on_scroll(multiplier)
         if self.scrollable and not self.element_at(x, y):
-            self.tab_scroll(scroll)
+            self.tab_scroll(multiplier)
     #-------------------------
-    def click_behavior(self, x:int, y:int) -> None:
+    def click_behavior(self) -> None:
+        x, y = self.mouse.x, self.mouse.y
         new_color:DisplayColor = self.element_at(x, y, DisplayColor)
         if self.dragged_color != new_color:
             self.dragged_color = new_color
         new_text_box:TextBox = self.element_at(x, y, TextBox)
         if self.focused_text_box != new_text_box:
             if self.focused_text_box:
-                self.focused_text_box.unfocus()#TODO: find why it takes so much time to update
+                self.focused_text_box.unfocus()
             if new_text_box:
                 new_text_box.focus()
             self.focused_text_box = new_text_box
@@ -202,28 +223,28 @@ class SuperElement:
     def __setitem__(self, key, value):
         self.ui[key] = value
 
-    def is_hovered(self, mouse_x:int, mouse_y:int) -> bool:
+    def is_hovered(self) -> bool:
         return True
 
-    def on_click(self, x:int, y:int) -> None:
+    def on_click(self) -> None:
         for ui in self:
-            ui.on_click(x, y)
+            ui.on_click()
 
-    def on_release(self, x:int, y:int) -> None:
+    def on_release(self) -> None:
         for ui in self:
-            ui.on_release(x, y)
+            ui.on_release()
 
-    def on_motion(self, x:int, y:int) -> None:
+    def on_motion(self) -> None:
         for ui in self:
-            ui.on_motion(x, y)
+            ui.on_motion()
 
-    def on_drag(self, x:int, y:int) -> None:
+    def on_drag(self) -> None:
         for ui in self:
-            ui.on_drag(x, y)
+            ui.on_drag()
 
-    def on_scroll(self, x:int, y:int, scroll) -> None:
+    def on_scroll(self, multiplier) -> None:
         for ui in self:
-            ui.on_scroll(x, y, scroll)
+            ui.on_scroll(multiplier)
 
     def update_coords(self) -> None:
         pass
@@ -345,31 +366,31 @@ class Element:
     def __setitem__(self, key, value):
         self.drawables[key] = value
 
-    def is_hovered(self, mouse_x:int, mouse_y:int) -> bool:
-        return self.x <= mouse_x <= self.x + self.w and self.y <= mouse_y <= self.y + self.h
+    def is_hovered(self) -> bool:
+        return self.x <= self.mouse.x <= self.x + self.w and self.y <= self.mouse.y <= self.y + self.h
     
-    def animate(self, x:int, y:int) -> None:
-        if self.is_hovered(x, y):
+    def animate(self) -> None:
+        if self.is_hovered():
             self["outline"].color = settings["color"]["outline_hover"]
         else:
             self["outline"].color = settings["color"]["outline"]
 
-    def on_click(self, x:int, y:int) -> None:
-        if self.is_hovered(x, y):
-            self.animate(x, y)
+    def on_click(self) -> None:
+        if self.is_hovered():
+            self.animate()
             self.clicked = True
 
-    def on_release(self, x:int, y:int) -> None:
-        self.animate(x, y)
+    def on_release(self) -> None:
+        self.animate()
         self.clicked = False
 
-    def on_motion(self, x:int, y:int) -> None:
-        self.animate(x, y)
+    def on_motion(self) -> None:
+        self.animate()
 
-    def on_drag(self, x:int, y:int) -> None:
-        self.animate(x, y)
+    def on_drag(self) -> None:
+        self.animate()
 
-    def on_scroll(self, x, y, scroll) -> None:
+    def on_scroll(self, multiplier) -> None:
         pass
 
     def update_coords(self) -> None:
@@ -388,27 +409,27 @@ class Button(Element):
             "text": pyglet.text.Label(self.text, (self.x + self.w/2), (self.y + self.h/2), anchor_x="center", anchor_y="center", font_size=settings["text_size"], color=settings["color"]["text"], batch=self.batch, group=self.groups[2]),
         }
 
-    def animate(self, x:int, y:int) -> None:
-        if self.is_hovered(x, y):
+    def animate(self) -> None:
+        if self.is_hovered():
             for name, ui in self.drawables.items():
                 ui.color = settings["color"][f"{name}_hover"]
         else:
             for name, ui in self.drawables.items():
                 ui.color = settings["color"][name]
 
-    def on_release(self, x:int, y:int) -> None:
-        if self.is_hovered(x, y) and self.clicked:
+    def on_release(self) -> None:
+        if self.is_hovered() and self.clicked:
             if callable(self.func):
                 self.func()
         self.clicked = False
 
     def update_coords(self) -> None:
-        self.drawables["outline"].x = self.x - t
-        self.drawables["outline"].y = self.y - t
-        self.drawables["button"].x = self.x
-        self.drawables["button"].y = self.y
-        self.drawables["text"].x = self.x + self.w/2
-        self.drawables["text"].y = self.y + self.h/2
+        self["outline"].x = self.x - t
+        self["outline"].y = self.y - t
+        self["button"].x = self.x
+        self["button"].y = self.y
+        self["text"].x = self.x + self.w/2
+        self["text"].y = self.y + self.h/2
 
 #--------------------------------------------------
 
@@ -435,21 +456,21 @@ class TextBox(Element):
         self["text"].text = value
     #----------------------
 
-    def animate(self, x:int, y:int) -> None:
+    def animate(self) -> None:
         if self.focused:
             self["outline"].color = settings["color"]["outline_focus"]
-        elif self.is_hovered(x, y):
+        elif self.is_hovered():
             self["outline"].color = settings["color"]["outline_hover"]
         else:
             self["outline"].color = settings["color"]["outline"]
 
     def update_coords(self) -> None:
-        self.drawables["outline"].x = self.x - t
-        self.drawables["outline"].y = self.y - t
-        self.drawables["button"].x = self.x
-        self.drawables["button"].y = self.y
-        self.drawables["text"].x = self.x + self.w/2
-        self.drawables["text"].y = self.y + self.h/2
+        self["outline"].x = self.x - t
+        self["outline"].y = self.y - t
+        self["button"].x = self.x
+        self["button"].y = self.y
+        self["text"].x = self.x + self.w/2
+        self["text"].y = self.y + self.h/2
 
     def add(self, text:str) -> None:
         if self.numeric_only and text in "0123456789.+-*/%()":
@@ -463,7 +484,7 @@ class TextBox(Element):
 
     def focus(self) -> None:
         self.focused = True
-        self.animate(self.mouse.x, self.mouse.y)
+        self.animate()
 
     def unfocus(self) -> None:
         if valid_operation(self.text):
@@ -472,7 +493,7 @@ class TextBox(Element):
             except ZeroDivisionError:
                 pass
         self.focused = False
-        self.animate(self.mouse.x, self.mouse.y)
+        self.animate()
 
 #--------------------------------------------------
 
@@ -489,15 +510,15 @@ class OptionBox(Element):
         }
 
     def update_coords(self) -> None:
-        self.drawables["outline"].x = self.x - t
-        self.drawables["outline"].y = self.y - t
-        self.drawables["button"].x = self.x
-        self.drawables["button"].y = self.y
-        self.drawables["text"].x = self.x + self.w/2
-        self.drawables["text"].y = self.y + self.h/2
+        self["outline"].x = self.x - t
+        self["outline"].y = self.y - t
+        self["button"].x = self.x
+        self["button"].y = self.y
+        self["text"].x = self.x + self.w/2
+        self["text"].y = self.y + self.h/2
 
-    def on_click(self, x, y):
-        if self.is_hovered(x, y):
+    def on_click(self):
+        if self.is_hovered():
             self.current = (self.current + 1) % len(self.options)
             self["text"].text = self.options[self.current]
             self.clicked = True
@@ -514,18 +535,18 @@ class Toggle(Element):
             "text": pyglet.text.Label(("X" if self.value else ""), (self.x + self.w/2), (self.y + self.h/2), anchor_x="center", anchor_y="center", font_size=settings["text_size"], color=settings["color"]["text"], batch=self.batch, group=self.groups[2]),
         }
 
-    def on_release(self, x:int, y:int) -> None:
-        if self.is_hovered(x, y) and self.clicked:
+    def on_release(self) -> None:
+        if self.is_hovered() and self.clicked:
             self.toggle()
         self.clicked = False
 
     def update_coords(self) -> None:
-        self.drawables["outline"].x = self.x - t
-        self.drawables["outline"].y = self.y - t
-        self.drawables["button"].x = self.x
-        self.drawables["button"].y = self.y
-        self.drawables["text"].x = self.x + self.w/2
-        self.drawables["text"].y = self.y + self.h/2
+        self["outline"].x = self.x - t
+        self["outline"].y = self.y - t
+        self["button"].x = self.x
+        self["button"].y = self.y
+        self["text"].x = self.x + self.w/2
+        self["text"].y = self.y + self.h/2
 
     def toggle(self):
         self.value = not self.value
@@ -556,10 +577,10 @@ class DisplayColor(Element):
     #----------------------
 
     def update_coords(self) -> None:
-        self.drawables["outline"].x = self.x - t
-        self.drawables["outline"].y = self.y - t
-        self.drawables["display"].x = self.x
-        self.drawables["display"].y = self.y
+        self["outline"].x = self.x - t
+        self["outline"].y = self.y - t
+        self["display"].x = self.x
+        self["display"].y = self.y
 
 #--------------------------------------------------
 
@@ -576,33 +597,33 @@ class ColorSlider(Element):
             "cursor": pyglet.shapes.Rectangle(self.x, self.y, 1, self.h, white, batch=self.batch, group=self.groups[2])
         }
 
-    def on_click(self, x, y):
-        if self.is_hovered(x, y):
+    def on_click(self):
+        if self.is_hovered():
             self.clicked = True
-            self.value = clamp(0, ((x - self.x)/(self.w - 1)), 1)
+            self.value = clamp(0, ((self.mouse.x - self.x)/(self.w - 1)), 1)
             self.update_cursor()
 
-    def on_drag(self, x, y):
+    def on_drag(self):
         if self.clicked:
-            self.value = clamp(0, ((x - self.x)/(self.w - 1)), 1)
+            self.value = clamp(0, ((self.mouse.x - self.x)/(self.w - 1)), 1)
             self.update_cursor()
 
-    def on_scroll(self, x, y, scroll):
-        if self.is_hovered(x, y):
-            self.value = clamp(0, (self.value - scroll/(self.w - 1)), 1)
+    def on_scroll(self, multiplier):
+        if self.is_hovered():
+            self.value = clamp(0, (self.value - (self.mouse.scroll_y*multiplier)/(self.w - 1)), 1)
             self.update_cursor()
 
     def update_coords(self) -> None:
-        self.drawables["outline"].x = self.x - t
-        self.drawables["outline"].y = self.y - t
+        self["outline"].x = self.x - t
+        self["outline"].y = self.y - t
         for i in range(self.w):
-            self.drawables["gradient"][i].x = self.x + i
-            self.drawables["gradient"][i].y = self.y
+            self["gradient"][i].x = self.x + i
+            self["gradient"][i].y = self.y
         self.update_cursor()
 
     def update_cursor(self) -> None:
-        self.drawables["cursor"].x = self.x + self.value*(self.w - 1)
-        self.drawables["cursor"].y = self.y
+        self["cursor"].x = self.x + self.value*(self.w - 1)
+        self["cursor"].y = self.y
 
 #===================================================
 

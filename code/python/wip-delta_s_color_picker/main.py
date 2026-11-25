@@ -19,7 +19,7 @@ class ColorPickerApp(pyglet.window.Window):
         pyglet.gl.glClearColor(bg[0]/255, bg[1]/255, bg[2]/255 , 1)
         self.keys = pyglet.window.key.KeyStateHandler()
         self.push_handlers(self.keys)
-        self.mouse = Mouse(0, 0)
+        self.mouse = Mouse()
 
         # ----------
         self.tabs = {
@@ -83,25 +83,25 @@ class ColorPickerApp(pyglet.window.Window):
     def on_mouse_press(self, x, y, button, modifiers) -> None:
         self.mouse.update(x, y)
         if button == pyglet.window.mouse.LEFT:
-            self.current_tab.on_click(x, y)
+            self.current_tab.on_click()
     
     def on_mouse_release(self, x, y, button, modifiers) -> None:
         self.mouse.update(x, y)
         if button == pyglet.window.mouse.LEFT:
-            self.current_tab.on_release(x, y)
+            self.current_tab.on_release()
 
     def on_mouse_motion(self, x, y, dx, dy) -> None:
-        self.mouse.update(x, y)
-        self.current_tab.on_motion(x, y)
+        self.mouse.update(x, y, dx, dy)
+        self.current_tab.on_motion()
 
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers) -> None:
-        self.mouse.update(x, y)
-        self.current_tab.on_drag(x, y)
+        self.mouse.update(x, y, dx, dy)
+        self.current_tab.on_drag()
 
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y) -> None:
-        self.mouse.update(x, y)
+        self.mouse.update(x, y, scroll_x=scroll_x, scroll_y=scroll_y)
         multiplier = 10 if (self.keys[pyglet.window.key.LSHIFT] or self.keys[pyglet.window.key.RSHIFT]) else 1
-        self.current_tab.on_scroll(x, y, (scroll_y * multiplier))
+        self.current_tab.on_scroll(multiplier)
     #-------------------------
     def run(self) -> None:
         pyglet.app.run(1/60)
